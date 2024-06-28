@@ -1,0 +1,59 @@
+clear_screen
+print("<b>[+] Code By CHABOX <>\n<b>[+] Recommended : Run as ROOT <!>\n<b>[*] <color=blue>PROGRAM RUNNING IN BACKGROUND: Note(will show when found!)")
+user = active_user
+if user == "root" then
+	print("<b>[+] ROOT ACCESS DETECTED :)")
+end if
+root = "root"
+computer = get_shell.host_computer
+while(true)
+	if user == "root" then
+		rootmail = computer.File("/root/Config/Mail.txt")
+		rootbank = computer.File("/root/Config/Bank.txt")
+		if rootmail then
+			if rootmail.has_permission("r") then
+				content = rootmail.get_content
+			else
+				content = "Permission Denied"
+			end if
+			if rootmail.has_permission("w") then
+				rootmail.delete
+			else
+				print("<b>[!]</b> <color=red>Error: Permission Denied-cant delete the file! user ["+root+"]")
+			end if
+			print("<b>[+]</b> Bank File Found [<color=white>"+content+"</color=white>] user [<color=white>"+"root"+"</color=white>]")
+		end if
+		if rootbank then
+			if rootbank.has_permission("r") then
+				content = rootbank.get_content
+			else
+				content = "Permission Denied"
+			end if
+			if rootbank.has_permission("w") then
+				rootbank.delete
+			else
+				print("<b>[!]</b> <color=red>Error: Permission Denied-cant delete the file! user ["+root+"]")
+			end if
+			print("<b>[+]</b> Bank File Found [<color=white>"+content+"</color=white>] user [<color=white>"+"root"+"</color=white>]")
+		end if
+	end if
+	folders = computer.File("/home").get_folders
+	for folder in folders
+		bankfile = computer.File(folder.path+"/Config/Bank.txt")
+		mailfile = computer.File(folder.path+"/Config/Mail.txt")
+		if bankfile then
+			print("<b>[+]</b> Bank File Found [<color=white>"+bankfile.get_content+"</color=white>] user [<color=white>"+folder.name+"</color=white>]")
+			bankfile.delete
+		end if
+		if mailfile then
+			print("<b>[+]</b> Mail File Found [<color=white>"+mailfile.get_content+"</color=white>] user [<color=white>"+folder.name+"</color=white>]")
+			mailfile.delete
+		end if
+		if not bankfile then
+			continue
+		end if
+		if not mailfile then
+			continue
+		end if
+	end for
+end while

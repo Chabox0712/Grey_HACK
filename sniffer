@@ -1,0 +1,51 @@
+clear_screen
+if params.len == 1 and (params[0] == "-h" or params[0] == "--help" or params[0] != "-save") then exit(command_info("sniffer_usage"))
+metaxploit = include_lib("/lib/metaxploit.so")
+if not metaxploit then
+	metaxploit = include_lib(current_path + "/metaxploit.so")
+end if
+if not metaxploit then exit("Error: Can't find metaxploit library in the /lib path or the current folder")
+print("[+] Starting listen...\nWaiting to incoming data.")
+iter_ = function()
+	while(true)
+		if not get_shell.host_computer.is_network_active then
+		print("<b>[!] No internet\n<b><<<=== GET INTERNET ACCESS ===>>>")
+		wait(2)
+		continue
+		else
+			break
+		end if
+	end while
+end function
+file_ = function(output)
+	name1 = output.split("\n")
+	part1 = name1[5].split(" ")
+	part2 = name1[6].split(" ")
+	file = get_shell.host_computer.File(current_path+"/encode.src")
+	if file then file.move(current_path+"/Sniffed", part1[1]+"_"+part2[1]+".src")
+	pass = get_shell.launch(current_path+"/decode", "dec "+part2[1])
+	print("[+] DECODED PASS : ["+pass+"]")
+end function
+while(true)
+	iter_()
+	print("<b><color=blue>#########################################")
+	output = metaxploit.sniffer(true)
+	if not output then
+		print("Unknown error: can't start to listening")
+		wait(0.9)
+		return
+	end if
+	print(output)
+	name1 = output.split("\n")
+	part1 = name1[5].split(" ")
+	part2 = name1[6].split(" ")
+	if name1[6].indexOf(" ") > 16 then
+		folder = get_shell.host_computer.File(current_path+"/Sniffed")
+		if folder then
+			file_(output)
+		else
+			folder = get_shell.host_computer.create_folder(current_path, "Sniffed")
+			file_(output)
+		end if
+	end if
+end while

@@ -1,0 +1,42 @@
+//command: decipher
+//banner @CHABOX
+banner = ("<color=red><b>$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+banner1 = ("<color=red><b>########################################################")
+banner2 = ("<color=red><b>&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+
+cryptools = include_lib("/lib/crypto.so")
+if not cryptools then exit("Error: Missing crypto library")
+
+if params.len != 1 or params[0] == "-h" or params[0] == "--help" then exit(command_info("decipher_usage"))
+
+origFile = params[0]
+file = get_shell.host_computer.File(origFile)
+if not file then
+	lines = params[0].split("\n")
+	for line in lines
+		userPass = line.split(":")
+		print(banner2+"\n<b><<<=== Cracking Password For <color=red><b>"+userPass[0]+"</color=red> ===>>>\n"+banner)
+		//print("\n<b><<<=== Cracking Password For <color=red><b>"+userPass[0]+"</color=red> ===>>>")
+		pass = cryptools.decipher(userPass[1])
+		print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+		//print(banner2+"\n"+banner)
+	end for
+exit("\n<color=blue><b>Password Cracker By Chabox@ <<!!!>> :)\n")
+end if
+
+if not file then exit("decipher: can't find " + origFile)
+if file.is_binary then exit("decipher: can't read " + origFile + " Binary file")
+if not file.has_permission("r") then exit("decipher: can't read file. Permission denied")
+if file.get_content.len == 0 then exit("decipher: no users found")
+lines = file.get_content.split("\n")
+password = null
+for line in lines
+	userPass = line.split(":")
+	print(banner2+"\n"+banner)
+	print("<b><<<=== Cracking Password For <color=red><b>"+userPass[0]+"</color=red> ===>>>")
+	pass = cryptools.decipher(userPass[1])
+	print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF><b> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+	//print(banner2+"\n"+banner)
+end for 
+exit("\n<color=blue><b>Password Cracker By Chabox@ <<!!!>> :)\n")

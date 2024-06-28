@@ -1,0 +1,29 @@
+//decipher
+if params.len != 1 or params[0] == "-h" or params[0] == "--help" then exit(command_info("decipher_usage"))
+comp = get_shell.host_computer
+crypto = include_lib("/lib/crypto.so")
+if not crypto then
+	crypto = include_lib(current_path+"/crypto.so")
+	if not crypto then exit("crypto not found")
+end if
+decipher_ = function(lines)
+	for line in lines
+		if line == null then continue
+		if line == " " then continue
+		pass = line.split(":")
+		password = crypto.decipher(pass[1])
+		print("Username : "+pass[0]+"\nPassword : "+password)
+	end for
+end function
+origFile = params[0]
+file = get_shell.host_computer.File(origFile)
+if file then
+	if file.is_binary then exit("decipher: can't read " + origFile + ". Binary file")
+	if not file.has_permission("r") then exit("decipher: can't read file. Permission denied")
+	if file.get_content.len == 0 then exit("decipher: no users found")
+	lines = file.get_content.split("\n")
+	decipher_(lines)
+else
+	lines = origFile.split("\n")
+	decipher_(lines)
+end if

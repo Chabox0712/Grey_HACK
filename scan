@@ -1,0 +1,726 @@
+//banner @CHABOX
+banner = ("<color=red><b>$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+banner1 = ("<color=red><b>########################################################")
+banner2 = ("<color=red><b>&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+if params.len != 0 then
+	if params[0] == "-h" or params[0] == "--help" then exit("Error: scan [IP] [Port] [Memory Address] [Vuln Func]")
+end if
+cryptools = include_lib("/lib/crypto.so")
+if not cryptools then
+	cryptools = include_lib(current_path+"/crypto.so")
+end if
+if not cryptools then print("\n<color=red><b>Crypto not found [Do not use Cracking Options] <<!!!!!>>")
+metaxploit = null 
+metaxploit = include_lib("/lib/metaxploit.so")
+if not metaxploit then 
+	metaxploit = include_lib(current_path+"/metaxploit.so")
+	if not metaxploit then
+		ip = user_input("Enter Repo IP to Continue => ")
+		get_shell.launch("/bin/apt-get", "update")
+		get_shell.launch("/bin/apt-get", "addrepo "+ip)
+		get_shell.launch("/bin/apt-get", "update")
+		get_shell.launch("/bin/apt-get", "install metaxploit.so")
+		metaxploit = include_lib("/lib/metaxploit.so")
+		if not metaxploit then exit(":(")
+		print(":)")
+	end if
+end if
+if not metaxploit then
+	exit("Error: no metaxploit.so found!")
+end if
+computer_ = function(ovr)
+	if typeof(ovr) != "computer" then return false
+	while(true)
+		print("----[Computer]----")
+		print("please Select Number")
+		print("[1] = Read File")
+		print("[2] = Write File")
+		print("[3] = Upload File")
+		print("[4] = Download File")
+		print("[5] = Change Password of User")
+		print("[6] = Get list of users")
+		print("[7] = Get all Bank Passwords <<!!!!>>")
+		print("[8] = Get all Mail Passwords @!Chabox")
+		print("[9] = Get all Etc Passwords [not always successful] <<!!!!>>")
+		print("[10] = Get Root Password [Advanced] <!!>")
+		//print("[11] = Get all Bank Password [not always successful] <<!!!!>>")
+		//print("[12] = Get all Bank Password [not always successful] <<!!!!>>")
+		print("[999] = Back")
+		num = user_input("\n>")
+		if num == "1" then
+			filepath = user_input("File with path: ")
+			file = ovr.File(filepath)
+			if file == null then 
+				print("Error File not found!")
+				continue
+			end if
+			print("File Content: ")
+			print(file.get_content)
+		else if num == "2" then
+			filepath = user_input("File path (wihout the File itself): ")
+			f = user_input("file with extension: ")
+			file = ovr.File(filepath)
+			if file == null then 
+				err = touch(filepath,f)
+				if err != 1 then
+					print(err)
+				else
+					file = ovr.File(filepath)
+					if file == null then 
+						print("Error File could not be created.")
+					else
+						cont = user_input("content > ")
+						e = file.set_content(cont)
+						if e != 1 then 
+							print(e)
+						else
+							print("Content Successfully set!")
+						end if
+					end if
+				end if
+			end if
+		else if num == "3" then
+			// Upload 	
+		else if num == "4" then
+			// Donwload
+			filepath = user_input("File path: ")
+			file = ovr.File(filepath)
+			a = filepath.split("/")
+			fileloc = get_shell.host_computer.File(home_dir+"/Downloads/"+a[a.len-1] )
+			if fileloc == null then 
+				p = get_shell.host_computer.touch(home_dir+"/Downloads/",a[a.len-1])
+				if p != 1 then 
+					print(p)
+				else
+					if file == null then 
+						print("File Cannt be Found in "+filepath)
+					else
+						fileloc = get_shell.host_computer.File(home_dir+"/Downloads/"+a[a.len-1] )
+						o = fileloc.set_content(file.get_content)
+						if o != 1 then
+							print(o)
+						else
+							print("File Downloaded!")
+							print("Path: "+home_dir+"/Downloads/"+a[a.len-1])
+						end if
+					end if
+				end if
+			else
+				if file == null then 
+					print("File Cannt be Found in "+filepath)
+				else
+					fileloc = get_shell.host_computer.File(home_dir+"/Downloads/"+a[a.len-1] )
+					o = fileloc.set_content(file.get_content)
+					if o != 1 then
+						print(o)
+					else
+						print("File Downloaded!")
+						print("Path: "+home_dir+"/Downloads/"+a[a.len-1])
+					end if
+				end if
+			end if
+		else if num == "5" then
+			print("<<<<=== Root is requires [<<!!!>>] =====>>>> ")
+			user = user_input("User: ")
+			ok = ovr.change_password(user,"1234")
+			if ok == 1 then
+				print("Password for user "+ user +" was successfully changed to: 1234")
+			else
+				print("Error while Password change!")
+			end if
+		else if num == "6" then
+			print("----[users]----")
+			for f in ovr.File("/home").get_folders
+				print(f.name)
+			end for
+		else if num == "7" then
+			print("----[Bank Passwords]----")
+			users = ovr.File("/home").get_folders
+			for user in users
+				file = ovr.File("/home/"+user.name+"/Config/Bank.txt")
+				if not file then print("<color=red><b>Bank File Not Found For [ "+user.name+" ]")
+				if not file then continue
+				if file.is_binary then continue
+				if not file.has_permission("r") then print("<color=red><b>Permission Denied <!!>")
+				if not file.has_permission("r") then continue
+				files = file.get_content
+				g = user_input("<b>//Do you want to crack the passwords// [y/n] => ")
+				if g != "y" then
+					print("<b>HASH [ "+files+" ]")
+					g = null
+					continue
+				end if
+				lines = files.split("\n")
+				for line in lines
+					if line == null then continue
+					userPass = line.split(":")
+					print(banner2+"\n<b><<<=== Cracking Bank Password For User [ <color=red><b>"+user.name+"</color=red> ] ===>>>\n"+banner)
+					pass = cryptools.decipher(userPass[1])
+					print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+				end for
+			end for
+		else if num == "8" then
+			print("----[Mail Passwords]----")
+			users = ovr.File("/home").get_folders
+			for user in users
+				file = ovr.File("/home/"+user.name+"/Config/Mail.txt")
+				if not file then print("<color=red><b>Mail File Not Found For [ "+user.name+" ]")
+				if not file then continue
+				if file.is_binary then continue
+				if not file.has_permission("r") then print("<color=red><b>Permission Denied <!!>")
+				if not file.has_permission("r") then continue
+				files = file.get_content
+				g = user_input("<b>//Do you want to crack the passwords// [y/n] => ")
+				if g != "y" then
+					print("<b>HASH [ "+files+" ]")
+					g = null
+					continue
+				end if
+				print(files)
+				lines = files.split("\n")
+				for line in lines
+					if line == null then continue
+					userPass = line.split(":")
+					print(banner2+"\n<b><<<=== Cracking Mail Password For User [ <color=red><b>"+user.name+"</color=red> ] ===>>>\n"+banner)
+					pass = cryptools.decipher(userPass[1])
+					print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+				end for
+			end for
+		else if num == "9" then
+			print("----[/etc/passwd Passwords]----")
+			file = ovr.File("/etc/passwd")
+			if not file then print("<color=red><b>File not found <!!!!>")
+			if not file then continue
+			if file.is_binary then continue
+			if not file.has_permission("r") then print("<color=red><b>Permission Denied <!!>")
+			if not file.has_permission("r") then continue
+			files = file.get_content
+			lines = files.split("\n")
+			for line in lines
+				if line == "" then continue
+				userPass = line.split(":")
+				if userPass == null then continue
+				g = user_input("<b>//Do you want to crack the passwords// [y/n] => ")
+				if g != "y" then
+					print("<b>HASH "+line)
+					g = null
+					continue
+				end if
+				print(banner2+"\n<b><<<=== Cracking Password For User [ <color=red><b>"+userPass[0]+"</color=red> ] ===>>>\n"+banner)
+				pass = cryptools.decipher(userPass[1])
+				print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+			end for
+		else if num == "10" then
+			print("----[Root Password Cracking Exploit <!!!!>]----")
+			file = ovr.File("/etc/passwd")
+			if not file then print("<color=red><b>File not found <!!!!>")
+			if not file then continue
+			if file.is_binary then continue
+			if not file.has_permission("r") then print("<color=red><b>Permission Denied <!!>")
+			if not file.has_permission("r") then continue
+			files = file.get_content.split("\n")
+			g = user_input("<b>//Do you want to crack the passwords// [y/n] => ")
+				if g != "y" then
+					print("<b>HASH [ "+files[0]+" ]")
+					continue
+				end if
+			userPass = files[0].split(":")
+			print(banner2+"\n<b><<<=== Cracking Password For User [ <color=red><b>"+userPass[0]+"</color=red> ] ===>>>\n"+banner)
+			pass = cryptools.decipher(userPass[1])
+			print("<color=#5B7101FF><b>User_Name [<color=#00B5E9FF><b> "+userPass[0]+"</color=#00B5E9FF> ]\n<color=#5B7101FF><b>Password [<color=#00B5E9FF><b> "+pass+"</color=#00B5E9FF> ] ")
+		else if num == "999" then
+			break
+		end if
+	end while
+end function
+shell_ = function(ovr)
+	if typeof(ovr) != "shell" then return false
+	while(true)
+		print("----[Shell]----")
+		print("please Select Number")
+		print("[1] = Execute Remote Terminal with scan upload")
+		print("[2] = Execute Remote Terminal without scan upload")
+		print("[999] = Back")
+		inp = user_input(">")
+		if inp == "1" then
+			user = user_input("please enter username: ")
+			if user == "root" then
+				if get_shell.host_computer.File("/lib/metaxploit.so") != null then
+					get_shell.scp("/lib/metaxploit.so","/"+user+"/",ovr)
+					get_shell.scp("/lib/crypto.so","/"+user+"/",ovr)
+					get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				else
+					get_shell.scp(current_path+"/metaxploit.so","/"+user+"/",ovr)
+					get_shell.scp(current_path+"/crypto.so","/"+user+"/",ovr)
+					get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				end if
+				get_shell.scp(current_path+"/metaxploit.so","/"+user+"/",ovr)
+				get_shell.scp(current_path+"/crypto.so","/"+user+"/",ovr)
+				get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				get_shell.scp(launch_path,"/"+user+"/",ovr)
+				print(current_path+"/metaxploit.so")
+				vulnerabfiles = get_shell.host_computer.File(current_path+"/vulnerabilities")
+				if vulnerabfiles.is_folder then
+					get_shell.scp(vulnerabfiles.path,"/"+user+"/",ovr)
+					print(vulnerabfiles.path)
+				end if
+			else
+				if get_shell.host_computer.File("/lib/metaxploit.so") != null then
+					get_shell.scp("/lib/metaxploit.so","/home/"+user+"/",ovr)
+					get_shell.scp("/lib/crypto.so","/home/"+user+"/",ovr)
+					get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				else
+					get_shell.scp(current_path+"/metaxploit.so","/home/"+user+"/",ovr)
+					get_shell.scp(current_path+"/crypto.so","/home/"+user+"/",ovr)
+					get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				end if
+				get_shell.scp(current_path+"/metaxploit.so","/home/"+user+"/",ovr)
+				get_shell.scp(current_path+"/crypto.so","/home/"+user+"/",ovr)
+				get_shell.scp(current_path+"/scan","/home/"+user+"/",ovr)
+				print(current_path+"/metaxploit.so")
+				vulnerabfiles = get_shell.host_computer.File(current_path+"/vulnerabilities")
+				if vulnerabfiles.is_folder then
+					get_shell.scp(vulnerabfiles.path,"/home/"+user+"/",ovr)
+					print(vulnerabfiles.path)
+				end if
+			end if
+			ovr.start_terminal()
+		else if inp == "2" then
+			ovr.start_terminal()
+		else if inp == "999" then
+			break
+		end if
+	end while
+end function
+file_ = function(ovr)
+	if typeof(ovr) != "file" then return false
+	while(true)
+		print("----[file]----")
+		print(ovr.path)
+		print("Owner: "+ ovr.owner + " Group: "+ ovr.group)
+		print("Perms: "+ovr.permissions)
+		print("please Select Number")
+		print("[1] = Read")
+		print("[2] = Write")
+		print("[999] = Back")
+		inp = user_input(">")
+		if inp == "1" then
+			print("Content: ")
+			print(ovr.get_content)
+		else if inp == "2" then
+			cont = user_input("cont>")
+			l = ovr.set_content(cont)
+			if l != 1 then 
+				print(l)
+			else
+				print("Write ok!")
+			end if
+		else if inp == "999" then
+			break
+		end if
+	end while
+end function
+folder_ = function(ovr)
+	if typeof(ovr) != "file" then return false
+	while(true)
+		print("----[folder]----")
+		print(ovr.path+"/")
+		print("please Select Number")
+		print("[1] = folders("+ovr.get_folders.len+")")
+		print("[2] = files("+ovr.get_files.len+")")
+		print("[999] = Back")
+		inp = user_input(">")
+		if inp == "1" then
+			while(true)
+				print("----[folders]----")
+				print(ovr.path+"/")
+				i=0
+				for f in ovr.get_folders
+					print("["+i+"] = "+f.path)
+					i = i + 1
+				end for
+				print("[999] = Back")
+				inp = user_input(">")
+				if inp == "999" then
+					break
+				end if
+				if ovr.get_folders.hasIndex(inp.to_int) then
+					folder_(ovr.get_folders[inp.to_int])
+				end if
+			end while 
+		else if inp == "2" then
+			while(true)
+				print("----[files]----")
+				print(ovr.path+"/")
+				i=0
+				for f in ovr.get_files
+					print("["+i+"] = "+f.path)
+					i = i + 1
+				end for
+				print("[999] = Back")
+				inp = user_input(">")
+				if inp == "999" then
+					break
+				end if
+				if ovr.get_files.hasIndex(inp.to_int) then
+					file_(ovr.get_files[inp.to_int])
+				end if
+			end while
+		else if inp == "999" then
+			break
+		end if 
+	end while
+end function 
+fileinit_ = function(ovr)
+	if typeof(ovr) != "file" then return false
+	if ovr.is_folder then
+		folder_(ovr)
+	else
+		file_(ovr)
+	end if
+end function
+handles_ = function(lib,shells,computers,routers,files,lanip)
+	while(true)
+		print("----[Main]----")
+		print("No more Vulns found!")
+		print("[1] = Shells ("+shells.len+")")
+		print("[2] = Computers ("+computers.len+")")
+		print("[3] = Routers ("+routers.len+")")
+		print("[4] = Files ("+files.len+")")
+		print("[999] = Back")
+		inp = user_input(">")
+		if inp == "1" then
+			while(true)
+				print("----[Shell]----")
+				for s in shells
+					print("["+s["key"]+"] = "+s["value"])
+				end for
+				print("[999] = Back")
+				s = user_input("select>")
+				if shells.hasIndex(s.to_int) then
+					ovr = lib.overflow(shells[s.to_int]["mem"],shells[s.to_int]["value"],lanip)
+					shell_(ovr)
+				else if s == "999" then
+					break
+				end if
+			end while
+		else if inp == "2" then
+			while(true)	
+				print("----[Computer]----")
+				for s in computers
+					print("["+s["key"]+"] = "+s["value"])
+				end for
+				print("[999] = Back")
+				s = user_input("select>")
+				if computers.hasIndex(s.to_int) then
+					ovr = lib.overflow(computers[s.to_int]["mem"],computers[s.to_int]["value"],lanip)
+					computer_(ovr)
+				else if s == "999" then
+					break
+				end if
+			end while
+		else if inp == "3" then
+		else if inp == "4" then
+			while(true)	
+				print("----[Files]----")
+				for s in files
+					print("["+s["key"]+"] = "+s["value"])
+				end for
+				print("[999] = Back")
+				s = user_input("select>")
+				if files.hasIndex(s.to_int) then
+					ovr = lib.overflow(files[s.to_int]["mem"],files[s.to_int]["value"],lanip)
+					fileinit_(ovr)
+				else if s == "999" then
+					break
+				end if
+			end while
+		else if inp == "999" then
+			break
+		end if
+	end while
+end function
+run = true
+i = 0
+IP = null
+if params.len != 0 then IP = params[0]
+libscanned = {}
+libscanne = {}
+scanfunc_ = function(lib,loadvuln,lanip)
+	if loadvuln then
+		vulnerabfile = get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version)
+		listMem = []
+		memread = vulnerabfile.get_content().remove("[").remove("]").split(", ")
+		for memreadindex in memread.indexes
+			listMem.push("")
+			for memstringindex in memread[memreadindex].indexes
+				if memstringindex > 0 and memstringindex < (memread[memreadindex].len() -1) then listMem[memreadindex] = listMem[memreadindex]+memread[memreadindex][memstringindex]
+			end for
+		end for
+	else
+		listMem = metaxploit.scan(lib)
+		vulnerabfile = get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version)
+		if vulnerabfile == null then get_shell.host_computer.touch(current_path+"/vulnerabilities/",lib.lib_name()+"_"+lib.version)
+		vulnerabfile = get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version)
+		get_shell.host_computer.File(current_path+"/vulnerabilities").chmod("o+wrx",true)
+		if vulnerabfile != null then vulnerabfile.set_content(listMem)
+	end if
+	index = 1
+	for itemMem in listMem
+		print(index +": [" + itemMem + "]")
+		index = index + 1
+	end for
+	if listMem.len == 0 then exit("Scan completed: No issues detected.")
+
+	shells = {}
+	computers = {}
+	routers = {}
+	files = {}
+	print("Scan completed: detected issues in " + listMem.len + " memory zones.")
+	for itemMem in listMem
+		print("Scanning for vulnerabilities at memory zone: " + itemMem)
+		vuln = metaxploit.scan_address(lib, itemMem)
+		lel = {}	
+		word = false
+		wordi = 0
+		for i in vuln
+			if i == "<" then
+				word = true
+				if not lel.hasIndex(wordi) then lel[wordi] = ""
+				lel[wordi] = lel[wordi] + i
+			else if lel.hasIndex(wordi) and lel[wordi].lastIndexOf("</b>") != -1 then
+				wordi = wordi + 1
+				word = false
+			else if lel.hasIndex(wordi) and word then
+				lel[wordi] = lel[wordi] + i
+			end if
+		end for
+		newlel = {}
+		for k in lel
+			val = k["value"]
+			if val.indexOf(".so") == null and val.indexOf(".") == null then 
+				newlel[newlel.len] = val.replace("<b>","").replace("</b>","")
+			end if
+		end for
+		for l in newlel
+			print("<color=red><b>Address: "+ itemMem)
+			print("<color=red><b>Vuln Func: "+ l["value"])
+			if lanip then 
+				ovr = lib.overflow(itemMem,l["value"],lanip)
+				print("<color=white><b>Got ["+ovr+"]")
+			else 
+				lanip = user_input("Injection [null] => ")
+				if lanip == "null" then lanip = "127.0.0.1"
+				ovr = lib.overflow(itemMem,l["value"],lanip)
+				print("<color=white><b>Got ["+ovr+"]")
+			end if
+			if typeof(ovr) == "shell" then
+				shells[shells.len+1] = {"mem":itemMem,"value": l["value"]}
+			else if typeof(ovr) == "computer" then
+				computers[computers.len+1] = {"mem":itemMem,"value": l["value"]}
+			else if typeof(ovr) == "file" then
+				files[files.len+1] = {"mem":itemMem,"value": l["value"]}
+			end if
+		end for
+	end for
+	handles_(lib,shells,computers,routers,files,lanip)
+end function
+scanport_ = function(port)
+	i = port
+	lanip = ""
+	if i == 0 then lanip = user_input("LAN IP of victim: ")
+	net_session = metaxploit.net_use(IP,port)
+	if net_session == null then exit("Error: net_session")
+	lib = net_session.dump_lib()
+	if get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version) != null then
+		while(true)
+			print("Found exist vulnerabilities list")
+			print("[1] = Use exist vulnerabilities list")
+			print("[2] = Perform new scan")
+			print("[999] = Back")
+			inp = user_input(">")
+			if inp == "1" then
+				print("----PERFORMIMING ATTACK TO MEMORIZED VULNERABILITIES FOR: "+lib.lib_name()+"_"+lib.version+"-----")
+				scanfunc_(lib,true,lanip)
+			else if inp == "2" then
+				print("----SCANNING PORT: "+i+"-----")
+				print("Scanning memory address...")
+				scanfunc_(lib,false,lanip)
+			else if inp == "999" then
+				break
+			end if
+		end while
+	else
+		print("----SCANNING PORT: "+i+"-----")
+		print("Scanning memory address...")
+		scanfunc_(lib,false,lanip)
+	end if
+end function
+handlescannes_ = function()
+	while(true)
+		print("----Scanned----")
+		print("Select One Port/Lib")
+		for k in libscanned
+			print("<b>["+k["value"]+"] <color=blue>PORT</color=blue> ["+k.key+"]")
+		end for
+		print("[999] = Exit")
+		inp = user_input(">")
+		if libscanned.hasIndex(inp.to_int) then
+			scanport_(inp.to_int)
+		else if inp == "999" then
+			break
+		end if
+	end while
+end function
+scanlib_ = function(f)
+	lib = metaxploit.load(f.path)
+	if not lib then exit("can't find library !")
+	print("Found Lib: "+lib.lib_name()+"_"+lib.version)
+	if get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version) != null then
+		while(true)
+			print("Found exist vulnerabilities list")
+			print("[1] = Use exist vulnerabilities list")
+			print("[2] = Perform new scan")
+			print("[999] = Back")
+			inp = user_input(">")
+			if inp == "1" then
+				print("----PERFORMIMING ATTACK TO MEMORIZED VULNERABILITIES FOR: "+lib.lib_name()+"_"+lib.version+"-----")
+				scanfunc_(lib,true,"")
+			else if inp == "2" then
+				print("Scanning memory address...")
+				scanfunc_(lib,false,"")
+			else if inp == "999" then
+				break
+			end if
+		end while
+	else
+		print("Scanning memory address...")
+		scanfunc_(lib,false,"")
+	end if
+end function
+
+handlescanneslocal_ = function()
+	while(true)
+		print("----Scanned----")
+		print("Select One Lib")
+		i = 0
+		for k in get_shell.host_computer.File("/lib").get_files
+			print("["+i+"] = ("+k.path+")")
+			i = i +1
+		end for
+		print("[999] = Exit")
+		inp = user_input(">")
+		if get_shell.host_computer.File("/lib").get_files.hasIndex(inp.to_int) then
+			scanlib_(get_shell.host_computer.File("/lib").get_files[inp.to_int])
+		else if inp == "999" then
+			break
+		end if
+	end while
+end function
+
+if params.len == 2 then 
+	port = params[1] 
+	lanip = ""
+	if port == "0" then lanip = user_input("LAN IP of victim: ")
+	print("----SCANNING PORT: "+port+"-----")
+	net_session = metaxploit.net_use(IP,port.val)
+	if net_session == null then exit("Error: net_session")
+	lib = net_session.dump_lib()
+	if not lib then exit("can't find library !")
+	print("Found Lib: "+lib.lib_name()+"_"+lib.version)
+	if get_shell.host_computer.File(current_path+"/vulnerabilities/"+lib.lib_name()+"_"+lib.version) != null then
+		while(true)
+			print("Found exist vulnerabilities list")
+			print("[1] = Use exist vulnerabilities list")
+			print("[2] = Perform new scan")
+			print("[999] = Back")
+			inp = user_input(">")
+			if inp == "1" then
+				print("----PERFORMIMING ATTACK TO MEMORIZED VULNERABILITIES FOR: "+lib.lib_name()+"_"+lib.version+"-----")
+				scanfunc_(lib,true,lanip)
+			else if inp == "2" then
+				print("Scanning memory address...")
+				scanfunc_(lib,false,lanip)
+			else if inp == "999" then
+				break
+			end if
+		end while
+	else
+		print("Scanning memory address...")
+		scanfunc_(lib,false,lanip)
+	end if
+else if params.len == 4 then
+	port = params[1] 
+	lanip = ""
+	if port == "0" then lanip = user_input("LAN IP of victim: ")
+	print("----PORT: "+port+"-----")
+	net_session = metaxploit.net_use(IP,port.val)
+	if net_session == null then exit("Error: net_session")
+	lib = net_session.dump_lib()
+	if not lib then exit("can't find library !")
+	print("Found Lib: "+lib.lib_name()+"_"+lib.version)
+	print("----Executing Overflow with infos")
+	if lanip then 
+		ovr = lib.overflow(params[2],params[3],lanip)
+		print("<color=white><b>Got "+ovr)
+	else 
+		lanip = user_input("Injection => ")
+		ovr = lib.overflow(params[2],params[3],lanip)
+		print("<color=white><b>Got "+ovr)
+	end if
+	if typeof(ovr) == "shell" then
+		shell_(ovr)
+	else if typeof(ovr) == "computer" then
+		computer_(ovr)
+	else if typeof(ovr) == "file" then
+		fileinit_(ovr)
+	end if
+else if params.len == 1 then
+	ipAddress = params[0]
+	isLanIp = is_lan_ip( ipAddress )
+
+	if isLanIp then
+	router = get_router;
+	else 
+	router = get_router( ipAddress )
+	end if
+
+	if router == null then exit("nmap: ip address not found")
+	ports = null
+	if not isLanIp then
+	ports = router.used_ports
+	else
+	ports = router.device_ports(ipAddress)
+	end if
+	if ports == null then exit("nmap: ip address not found")
+	if typeof(ports) == "string" then exit(ports)
+	print("Interesting ports on " + params[0] + "\n")
+	if(ports.len == 0) then exit("Scan finished. No open ports.")
+	for k in ports
+		i = k.port_number
+		port = i 
+		net_session = metaxploit.net_use(IP,port)
+		if net_session == null then continue
+		lib = net_session.dump_lib()
+		if not lib then
+			print("can't find library !")
+			continue
+		end if
+		if libscanned.hasIndex(lib.lib_name()+"_"+lib.version) then 
+			continue
+		end if
+		libscanned[i] = k.get_lan_ip+"] ["+lib.lib_name()+"_"+lib.version
+	end for
+	// Router
+	net_session = metaxploit.net_use(IP)
+	if net_session == null then handlescannes_()
+	lib = net_session.dump_lib()
+	if not lib then
+		print("can't find library !")
+	end if
+	libscanned[0] = lib.lib_name()+"_"+lib.version
+	handlescannes_()
+else
+	handlescanneslocal_()
+end if
+

