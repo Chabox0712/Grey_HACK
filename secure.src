@@ -1,0 +1,86 @@
+local = {}
+local.shell = get_shell
+local.computer = local.shell.host_computer
+local.rootPath = local.computer.File("/")
+
+findAllFiles = function(fileObject, maxDepth = -1)
+    if fileObject.is_folder then total = {"ret":[fileObject], "stack":[maxDepth, fileObject]} else return [fileObject]
+    while total.stack
+        c = {"folder":total.stack.pop, "maxDepth":total.stack.pop}
+        if c.maxDepth then total.ret = total.ret + c.folder.get_folders + c.folder.get_files else continue
+        folders = c.folder.get_folders
+        for i in range(len(folders) - 1)
+            if folders then [total.stack.push(c.maxDepth - 1), total.stack.push(folders[i])] else break
+        end for
+    end while
+    return total.ret
+end function
+
+fileChmod = function(file, perm, isRecursive,userPerm)
+	if (typeof(file) != "file") then return
+	for user in userPerm.split(" ")
+		file.chmod(user+perm, isRecursive)
+	end for
+	file.set_group("root",isRecursive)
+	file.set_owner("root", isRecursive)
+end function
+
+if(active_user != "root")then print("<color=red>[-] Root access required!")
+
+allFiles = findAllFiles(local.rootPath)
+
+filesToDelete = [".","jumpfile","..src",".getsystem",".getsystem.src","guest","Mail.txt","Bank.txt",".log"]
+excludedFiles = ["mtx","viper","rocshell","Config","cd","Manual.exe","ScanLan.exe","CodeEditor.exe","PDFReader.exe","Notepad.exe","Map.exe","sudo","ls","FileExplorer.exe","Browser.exe","iwlist","aircrack","airmon","aireplay","ssh","ftp","ifconfig","iwconfig","Mail.exe","AdminMonitor.exe","Terminal.exe","ImageViewer.exe"]
+if(params.len>2)then exit("Usage: secure [-h] [excludedFiles (separated by comma) (eg: Mail.txt,Bank.txt)] [filesToDelete(eg: ..src,guest)]")
+if(params.len==1)then
+	if params[0] == "-h" then exit("Usage: secure [-h] [excludedFiles(separated by comma)(eg: Mail.txt,Bank.txt)] [filesToDelete(eg: ..src,guest)]")
+	if params[0] == "--help" then exit("Usage: secure [-h] [excludedFiles(separated by comma)(eg: Mail.txt,Bank.txt)] [filesToDelete(eg: ..src,guest)]")
+	otherFiles = params[0].split(",")
+	for file in otherFiles
+		excludedFiles.push(file)//adding other filenames
+	end for
+end if
+if(params.len==2)then
+	if params[0] == "-h" then exit("Usage: secure [-h] [excludedFiles(separated by comma)(eg: Mail.txt,Bank.txt)] [filesToDelete(eg: ..src,guest)]")
+	if params[0] == "--help" then exit("Usage: secure [-h] [excludedFiles(separated by comma)(eg: Mail.txt,Bank.txt)] [filesToDelete(eg: ..src,guest)]")
+	otherFiles = params[0].split(",")
+	for file in otherFiles
+		excludedFiles.push(file)//adding other filenames
+	end for
+	otherDelete = params[1].split(",")
+	for file in otherDelete
+		filesToDelete.push(file)
+	end for
+end if
+for file in allFiles
+	for fileToDelete in filesToDelete
+		if(file.name == fileToDelete)then
+		if(file.is_folder and fileToDelete=="viper")then continue
+		if(file.is_folder and fileToDelete=="jumpfile")then continue
+			print("Unwanted file ["+file.path+"]. Delete OK.")
+			file.delete //security measure to delete unwanted files and folders
+			continue
+		end if
+	end for
+	if(file.name == "/")then
+		fileChmod(file,"-wrx",true,"o g u")
+		continue
+	end if
+	if(file.name == "home")then
+		userFolders = file.get_folders
+		for folder in userFolders
+			fileChmod(folder,"+r",true,"g")
+        	excludedFiles.push(folder.name) //adding user_folders to excludedFiles list
+		end for
+	end if
+	for excludedFile in excludedFiles
+		if (file.name == excludedFile) then
+			if (excludedFile == "Config") then
+				fileChmod(file,"-wrx",true,"u g o")
+				continue
+			end if
+			if(file.is_folder and file.name == "viper")then continue
+			fileChmod(file,"+x",false,"g")
+		end if
+	end for
+end for
