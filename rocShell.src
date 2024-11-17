@@ -34,14 +34,14 @@ get_password = function()
     return password
 end function
 if params.len == 1 then
-    password = get_password()
-    software_password = params[0]
-    if not software_password then software_password = user_input("Enter Software Password : ")
-    check_password(software_password, password)
+   // password = get_password()
+    //software_password = params[0]
+    //if not software_password then software_password = user_input("Enter Software Password : ")
+    //check_password(software_password, password)
 else
-    password = get_password()
-    software_password = user_input("Enter Software Password : ")
-    check_password(software_password, password)
+   // password = get_password()
+    //software_password = user_input("Enter Software Password : ")
+   // check_password(software_password, password)
 end if
 //if params[0] != "password_here" then exit //if you need password protection use this line.
 clear_screen //if you dont like screen to be cleared remove this line
@@ -99,14 +99,14 @@ getCloudExploitAPI = function(metaxploit) //cloud exploit database api.
         self.interface.ret = null
         self.interface.args = ["scanMetaLib", metaLib]
         if typeof(self.connection) == "shell" then self.connection.launch("/interfaces/exploitAPI")
-        print("IF YOU SEE ANY WEIRD OUTPUT ABOVE (ESPECIALLY OVERFLOW PROMPT), OR IF YOUR TERMINAL WAS CLEARED (OUTPUT SHOULD ONLY BE A PROGRESS BAR, NOTHING MORE NOTHING LESS), IT MEANS THE SERVER WAS HACKED AND YOU NEED TO STOP USING THIS API RIGHT NOW, AND CONTACT DISCORD:rocketorbit IMMEDIATELY.")
+       // print("IF YOU SEE ANY WEIRD OUTPUT ABOVE (ESPECIALLY OVERFLOW PROMPT), OR IF YOUR TERMINAL WAS CLEARED (OUTPUT SHOULD ONLY BE A PROGRESS BAR, NOTHING MORE NOTHING LESS), IT MEANS THE SERVER WAS HACKED AND YOU NEED TO STOP USING THIS API RIGHT NOW, AND CONTACT DISCORD:rocketorbit IMMEDIATELY.")
         if hasIndex(self.interface, "ret") and @self.interface.ret != null and recursiveCheck(@self.interface.ret) then
             ret = @self.interface.ret
             clearInterface(self.interface)
             return ret
         end if
         clearInterface(self.interface)
-        print("Server failed. Using local scan.")
+        //print("Server failed. Using local scan.")
         ret = {}
         ret.lib_name = lib_name(@metaLib)
         ret.version = version(@metaLib)
@@ -255,7 +255,20 @@ if not metaxploit then print("missing lib metaxploit.so in lib or current path")
 
 api = getCloudExploitAPI(metaxploit)
 if api then hashMap = api.getHashes else hashMap = null //hashMap is not a HashMap, it is a map of hashes :)
-if not hashMap then hashMap = {}
+if not hashMap then
+	hashMapFile = local.computer.File("/root/password.lst")
+	if hashMapFile then
+		hashMap = hashMapFile.get_content
+	end if
+end if
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
+////////////////["Shoppe"]
 
 rshellAPI = getRshellAPI(metaxploit)
 
@@ -351,6 +364,7 @@ libs.getFile = function(toPath, fileObject) //changeDir only support folder but 
     return fileObject
 end function
 libs.allFiles = function(fileObject, maxDepth = -1)
+	libs.toFile(fileObject)
     if fileObject.is_folder then total = {"ret":[fileObject], "stack":[maxDepth, fileObject]} else return [fileObject]
     while total.stack
         c = {"folder":total.stack.pop, "maxDepth":total.stack.pop}
@@ -364,7 +378,7 @@ libs.allFiles = function(fileObject, maxDepth = -1)
 end function
 libs.find = function(fileName, fileObject) //find files under a dir
     founded = []
-    files = self.allFiles(fileObject)
+    files = libs.allFiles(fileObject)
     for file in files
         if lower(file.name).indexOf(lower(fileName)) != null then founded = founded + [file]
     end for
@@ -418,6 +432,9 @@ libs.checkIp = function(anyObject, targetIp, targetPort, currentRouter)
 end function
 libs.corruptLog = function(fileObject) //overwrite system.log by copy the smallest file to that dir
     if not fileObject then fileObject = current.folder
+	current.computer.touch("/",".system.log")
+	file = current.computer.File("/.system.log")
+	if file then file.set_content("temporary junk\nlog corruption data\ndscgducgewuwevgrurfne")
     while fileObject.parent
         fileObject = fileObject.parent
     end while
@@ -430,7 +447,7 @@ libs.corruptLog = function(fileObject) //overwrite system.log by copy the smalle
     end for
     if not toCopy then return print("No file to overwrite log! try using ""touch"".")
     logFile = self.getFile("/var/system.log", fileObject)
-    if not logFile then return print("log file not found!")
+    if not logFile then print("log file not found!")
     tryDelete = logFile.delete
     if tryDelete == "" then print("Log file deleted.") else return print("Error: " + tryDelete)
     tryCopy = toCopy.copy("/var", "system.log")
@@ -654,11 +671,13 @@ shellCommands["brutessh"]["run"] = function(args)
     if typeof(port) != "number" then return print("port invalid.")
     user = args[0]
     ip = args[1]
-    for pas in hashMap.values
+	if not hashMap then return print("No hashmap loaded.")
+    for pas in hashMap.split("\n")
+		if(pas == " ")or(pas == null)or(pas == char(10))then continue
         result = current.obj.connect_service(ip, port, user, pas)
         if typeof(result) != "shell" then continue
         globals.objects.push({"object":result, "user":libs.checkAccess(libs.toFile(result)), "localIp":current.lanIp, "publicIp":current.publicIp, "router":current.router})
-        return print("Password found! " + usr + ":" + pas)
+        return print("Password found! " + user + ":" + pas)
     end for
     return print("Failed.")
 end function
@@ -704,7 +723,7 @@ end function
 shellCommands["ping"] = {"name":"ping", "description":"Ping a ip.", "args":"[ip]"}
 shellCommands["ping"]["run"] = function(args)
     if args.len < 1 then return print("Invalid ip.")
-    result = current.obj.ping(params[0])
+    result = current.obj.ping(args)
     if result then
         if typeof(result) == "string" then
             print(result) 
@@ -820,7 +839,7 @@ commands["re"]["run"] = function(args)
     forceLocal = false
     while true
         exploits = api.queryExploit(metaLib.lib_name, metaLib.version) //Request exploit from cloud database API
-        //exploits = libs.scanLib(metaLib, metaxploit) //This is the full local version.
+       // exploits = libs.scanLib(metaLib, metaxploit) //This is the full local version.
         if (not exploits) or forceLocal then
             exploits = api.scanMetaLib(metaLib) //Scan for exploit and send to cloud database thru API
             forceLocal = true
@@ -868,7 +887,7 @@ commands["lo"]["run"] = function(args)
     forceLocal = false
     while true
         exploits = api.queryExploit(metaLib.lib_name, metaLib.version) //Request exploit from cloud database API
-        //exploits = libs.scanLib(metaLib, metaxploit) //This is the full local version.
+       // exploits = libs.scanLib(metaLib, metaxploit) //This is the full local version.
         if (not exploits) or forceLocal then
             exploits = api.scanMetaLib(metaLib) //Scan for exploit and send to cloud database thru API
             forceLocal = true
@@ -1065,6 +1084,72 @@ commands["help"]["run"] = function(args)
     end if
     return print(output)
 end function
+commands["hashdump"] = {"name":"hashdump", "description":"Find all passwords in a computer and save them to /root/password.lst", "args":""}
+commands["hashdump"]["run"] = function(args)
+	if not crypto then return print("crypto.so library required.")
+	passwordfileNames = ["Mail.txt","Bank.txt","passwd","password"]
+	fileObject = libs.toFile(current.obj)
+	allFiles = libs.allFiles(fileObject)
+	passwordHash = null
+	output = "\n[FILE_PATH] [USERNAME] [PASSWORD] [HASH]"
+	for file in allFiles
+		if (libs.typeofFile(file) == "txt") then
+			for f in passwordfileNames
+				if((file.name == f))then
+					if(file.has_permission("r") == false)then return print("Permission denied "+file.path+" "+file.permissions)
+					getfileContent = file.get_content.split("\n")
+					filetosavePassword = null
+					for c in getfileContent
+						if c == " " then continue
+						if not c then continue
+						if c == "\n" then continue
+						passwordHash = c.split(":")[1]
+						if passwordHash then 
+							p = crypto.decipher(passwordHash)
+							output = output + "\n" + ""+file.path+" "+c.split(":")[0]+" "+p+" "+passwordHash+""
+							if((not filetosavePassword.has_permission("r"))or(not filetosavePassword.has_permission("w"))) then filetosavePassword = null
+							if(not filetosavePassword)then
+								allFiles = libs.allFiles(local.computer.File("/"))
+								for f in allFiles
+									if(typeof(f) != "file")then continue
+									if(f.is_folder)and(f.has_permission("w"))and(f.has_permission("r"))then
+										if filetosavePassword then continue
+										print("no filetosavepassword creating file in folder "+f.path+" "+f.permissions)
+										createpasswordFile = local.computer.touch(f.path,"password.lst")
+										if(not createpasswordFile) then continue
+										if createpasswordFile then
+											filetosavePassword = local.computer.File(f.path+"/password.lst")
+											tempContent = []
+											tempContent = filetosavePassword.get_content
+											tempContent == tempContent.remove(char(10)) 
+											filetosavePassword.set_content(tempContent+p)
+											continue
+										end if
+									end if
+								end for
+							else
+								print("filetosavepassword.")
+								allFiles = libs.allFiles(local.computer.File("/"))
+								for f in allFiles
+									if(typeof(f) != "file")then continue
+									if(f.name == "password.lst")then
+										filetosavePassword = f
+										tempContent = []
+										tempContent = filetosavePassword.get_content
+										tempContent == tempContent//.remove(char(10)) 
+										filetosavePassword.set_content(tempContent+char(10)+p)
+										end if
+									end if
+								end for
+							end if
+						end if
+					end for
+				end if
+			end for
+		end if
+	end for
+	return print(format_columns(output))
+end function
 commands["secureserver"] = {"name":"secureserver", "description":"chmod -R ugo-rwx /, chown -R root /, chgrp -R root /.", "args":""}
 commands["secureserver"]["run"] = function(args)
     if user_mail_address then return print("secureserver is disabled on home.")
@@ -1122,8 +1207,10 @@ commands["text"]["run"] = function(args)
     textFile = libs.getFile(pathText)
     if not textFile then return print("File not found.")
     if textFile.is_binary or textFile.is_folder then return print("File not text.")
+	if not textFile.has_permission("w") then return print("Permission denied.")
     text = textFile.get_content
-    lines = text.split(char(10))
+	lines = ""
+    if text then lines = text.split(char(10))
     while true
         clear_screen
         for i in lines.indexes
@@ -1133,7 +1220,15 @@ commands["text"]["run"] = function(args)
         end for
         print("x: save and exit, s: save, q: exit, i: insert, m: modify, r: remove")
         option = user_input("> ", false, true)
-        if option.lower == "s" or option.lower == "x" then textFile.set_content(lines.join(char(10)))
+        if option.lower == "s" or option.lower == "x" then
+			if not textFile.has_permission("r") then
+				if (option.lower == "x") then return print("Permission denied")
+				print("Permission denied")
+				wait(0.5)
+				continue
+			end if
+			textFile.set_content(lines.join(char(10)))
+		end if
         if option.lower == "q" or option.lower == "x" then break
         if option.lower == "i" then
             print("specify line number, c to cancel.")
@@ -1174,12 +1269,25 @@ commands["find"] = {"name":"find", "description":"Find a file with its name.", "
 commands["find"]["run"] = function(args)
     if args.len < 1 then return print("Usage: find [file]")
     fileName = args[0]
-    files = libs.find(fileName)
-    output = []
+    files = libs.find(fileName, current.computer.File("/"))
+	if not files then return print("File ["+fileName+"] not found")
+    output = "PATH NAME TYPE +WRX FILE_SIZE PERMISSIONS OWNER GROUP"
     for file in files
-        output = output + [libs.typeofFile(file) + " " + file.path]
+		nameFile = file.name.replace(" ","_")
+        permission = file.permissions
+        owner = file.owner
+        size = file.size
+        group = file.group
+        type = "txt"
+        if file.is_binary == 1 then type = "bin"
+        if file.is_folder == 1 then type = "fld"
+        WRX = ""
+        if file.has_permission("w") then WRX = WRX + "w" else WRX = WRX + "-"
+        if file.has_permission("r") then WRX = WRX + "r" else WRX = WRX + "-"
+        if file.has_permission("x") then WRX = WRX + "x" else WRX = WRX + "-"
+        output = output + "\n[" + file.path + "]" + " [" + nameFile + "] [" + type + "] [" + WRX + "] [" + libs.fileSize(size) + "] [" + permission + "] [" + owner + "] [" + group + "]"
     end for
-    output = output.sort.join("\n")
+    output = format_columns(output)
     return print(output)
 end function
 commands["cat"] = {"name":"cat", "description":"Prints a file.", "args":"[file]"}
@@ -1381,7 +1489,8 @@ end function
 commands["brute"] = {"name":"brute", "description":"Bruteforce with a NPC password list. Only works locally.", "args":"[(opt) user]"}
 commands["brute"]["run"] = function(args)
     if args then usr = args[0] else usr = "root"
-    for pas in hashMap.values
+	if not hashMap then return print("No hashmap loaded.")
+    for pas in hashMap.split("\n")
         result = get_shell(usr, pas)
         if typeof(result) != "shell" then continue
         globals.objects.push({"object":result, "user":libs.checkAccess(libs.toFile(result)), "localIp":current.lanIp, "publicIp":current.publicIp, "router":current.router})
@@ -1391,9 +1500,7 @@ commands["brute"]["run"] = function(args)
 end function
 commands["clog"] = {"name":"clog", "description":"Clear log.", "args":""}
 commands["clog"]["run"] = function(args)
-    tryClearLog = libs.corruptLog(current.folder)
-    if not tryClearLog then return print("Failed.")
-    return print("Done.")
+    libs.corruptLog(current.folder)
 end function
 commands["local"] = {"name":"local", "description":"Get back to local.", "args":""}
 commands["local"]["run"] = function(args)
@@ -1416,6 +1523,32 @@ end function
 commands["exit"] = {"name":"exit", "description":"exit.", "args":""}
 commands["exit"]["run"] = function(args)
     return exit("exiting...")
+end function
+commands["updatehashmap"] = {"name":"updatehashmap", "description":"update hashmap.", "args":"[tell]"}
+commands["updatehashmap"]["run"] = function(args)
+	allFiles = libs.allFiles(local.computer.File("/"))
+	for f in allFiles
+		if(typeof(f) != "file") then continue
+		if(not f.has_permission("r")) then continue
+		if(f.name == "password.lst")then
+			hashMapFile = f
+			if hashMapFile then
+				hashMap = null
+				hashMap = hashMapFile.get_content
+				if args then
+					if args[0] == "tell" then return print("HashMap loaded.")
+				end if
+				return null
+			end if
+		else
+			continue
+		end if
+	end for
+	hashMap = null
+	if args then
+		if args[0] == "tell" then return print("Not loaded.")
+	end if
+	return null
 end function
 
 execute = function(input)
@@ -1446,6 +1579,7 @@ main = function()
         else
             input = user_input("<color=white>―</color><color=yellow>$</color> ")
         end if
+		execute("updatehashmap null")
         execute(input)
     end while
     return null
