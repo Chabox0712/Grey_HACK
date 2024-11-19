@@ -1,7 +1,10 @@
 if(params.len<1)then exit("Command: decipher [hash]")
 
 crypto = include_lib("/lib/crypto.so")
-if not crypto then exit("crypto.so not found.")
+if not crypto then
+	crypto = include_lib(current_path+"/crypto.so")
+	if(not crypto)then exit("crypto.so not found.")
+end if
 
 obj = {}
 obj.shell = get_shell()
