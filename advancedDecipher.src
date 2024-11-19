@@ -1,0 +1,41 @@
+if(params.len<1)then exit("Command: decipher [hash]")
+
+crypto = include_lib("/lib/crypto.so")
+if not crypto then exit("crypto.so not found.")
+
+obj = {}
+obj.shell = get_shell()
+obj.computer = obj.shell.host_computer
+
+filePath = obj.computer.File(params[0])
+
+getPasswords = function(hashList)
+	output = ""
+	for line in hashList
+		if(not line)then continue
+		if(line=="")then continue
+		hashList = line.split(":")
+		if(hashList.len==1)then
+			output = output+"\n"+"invalid-hashing"+" "+line+" "+"error"
+			continue
+		end if
+		if(hashList[1].len != 32)then
+			output = output+"\n"+"invalid-hashing"+" "+hashList[1]+" "+"error"
+			continue
+		end if
+		pass = crypto.decipher(hashList[1])
+		output = output+"\n"+hashList[0]+" "+hashList[1]+" "+pass
+	end for
+	return (output)
+end function
+
+if(typeof(filePath)=="file")then
+	hashList = filePath.get_content.split("\n")
+	output = getPasswords(hashList)
+else
+	hashList = params[0]
+	output = getPasswords(hashList.split("\n"))
+end if
+
+print(format_columns(output))
+
