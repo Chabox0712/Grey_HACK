@@ -10,8 +10,6 @@ obj = {}
 obj.shell = get_shell()
 obj.computer = obj.shell.host_computer
 
-filePath = obj.computer.File(params[0])
-
 decipher_ = function(hash) //deciphers one hash provided
 	return(crypto.decipher(hash))
 end function
@@ -39,14 +37,24 @@ getPasswords = function(lines)//deciphers the password list splited by \n
 	return (output)
 end function
 
-if(typeof(filePath)=="file")then
-	if(filePath.is_binary)then exit("decipher: can't read " + filePath.path + ". Binary file")
-	if(not filePath.has_permission("r"))then exit("decipher: can't read file. Permission denied "+filePath.permissions)
-	if(filePath.get_content.len == 0)then exit("decipher: no users found.")
-	output = getPasswords(filePath.get_content.split("\n"))
-else
-	output = getPasswords(params[0].split("\n"))
-end if
+getPassFile = function(path)
+	filePath = obj.computer.File(path)
+	if(typeof(filePath)=="file")then
+		if(filePath.is_binary)then exit("decipher: can't read " + filePath.path + ". Binary file")
+		if(not filePath.has_permission("r"))then exit("decipher: can't read file. Permission denied "+filePath.permissions)
+		if(filePath.get_content.len == 0)then exit("decipher: no users found.")
+		return(getPasswords(filePath.get_content.split("\n")))
+	else
+		return(getPasswords(path.split("\n")))
+	end if
+end function
+
+count = -1
+output = ""
+while(count<params.len-1)
+	count = count + 1
+	output = output+getPassFile(params[count])
+end while
 
 print(format_columns(output))
 print(".")
