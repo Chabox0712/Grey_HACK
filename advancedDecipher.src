@@ -57,4 +57,3 @@ while(count<params.len-1)
 end while
 
 print(format_columns(output))
-print(".")
