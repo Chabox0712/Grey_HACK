@@ -1,4 +1,30 @@
 //banner @CHABOX
+libs = {}
+libs.allFiles = function(fileObject, maxDepth = -1)
+	libs.toFile(fileObject)
+    if fileObject.is_folder then total = {"ret":[fileObject], "stack":[maxDepth, fileObject]} else return [fileObject]
+    while total.stack
+        c = {"folder":total.stack.pop, "maxDepth":total.stack.pop}
+        if c.maxDepth then total.ret = total.ret + c.folder.get_folders + c.folder.get_files else continue
+        folders = c.folder.get_folders
+        for i in range(len(folders) - 1)
+            if folders then [total.stack.push(c.maxDepth - 1), total.stack.push(folders[i])] else break
+        end for
+    end while
+    return total.ret
+end function
+libs.toFile = function(anyObject)
+    if typeof(anyObject) == "shell" then return anyObject.host_computer.File("/")
+    if typeof(anyObject) == "computer" then return anyObject.File("/")
+    if typeof(anyObject) == "file" then
+        while anyObject.parent
+            anyObject = anyObject.parent
+        end while
+        return anyObject
+    end if
+    return null
+end function
+
 banner = ("<color=red><b>$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 banner1 = ("<color=red><b>########################################################")
 banner2 = ("<color=red><b>&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
@@ -131,7 +157,7 @@ computer_ = function(ovr)
 		else if num == "6" then
 			print("----[users]----")
 			for f in ovr.File("/home").get_folders
-				print(f.name)
+				print(f.name+" "+f.permissions)
 			end for
 		else if num == "7" then
 			print("----[Bank Passwords]----")
@@ -294,11 +320,12 @@ shell_ = function(ovr)
 end function
 file_ = function(ovr)
 	if typeof(ovr) != "file" then return false
+	files = ovr
 	while(true)
 		print("----[file]----")
-		print(ovr.path)
-		print("Owner: "+ ovr.owner + " Group: "+ ovr.group)
-		print("Perms: "+ovr.permissions)
+		print(files.path)
+		print("Owner: "+ files.owner + " Group: "+ files.group)
+		print("Perms: "+files.permissions)
 		print("please Select Number")
 		print("[1] = Read")
 		print("[2] = Write")
@@ -306,10 +333,10 @@ file_ = function(ovr)
 		inp = user_input(">")
 		if inp == "1" then
 			print("Content: ")
-			print(ovr.get_content)
+			print(files.get_content)
 		else if inp == "2" then
 			cont = user_input("cont>")
-			l = ovr.set_content(cont)
+			l = files.set_content(cont)
 			if l != 1 then 
 				print(l)
 			else
@@ -322,20 +349,21 @@ file_ = function(ovr)
 end function
 folder_ = function(ovr)
 	if typeof(ovr) != "file" then return false
+	files = ovr
 	while(true)
 		print("----[folder]----")
-		print(ovr.path+"/")
+		print(files.path+"/")
 		print("please Select Number")
-		print("[1] = folders("+ovr.get_folders.len+")")
-		print("[2] = files("+ovr.get_files.len+")")
+		print("[1] = folders("+files.get_folders.len+")")
+		print("[2] = files("+files.get_files.len+")")
 		print("[999] = Back")
 		inp = user_input(">")
 		if inp == "1" then
 			while(true)
 				print("----[folders]----")
-				print(ovr.path+"/")
+				print(files.path+"/")
 				i=0
-				for f in ovr.get_folders
+				for f in files.get_folders
 					print("["+i+"] = "+f.path)
 					i = i + 1
 				end for
@@ -344,16 +372,16 @@ folder_ = function(ovr)
 				if inp == "999" then
 					break
 				end if
-				if ovr.get_folders.hasIndex(inp.to_int) then
-					folder_(ovr.get_folders[inp.to_int])
+				if files.get_folders.hasIndex(inp.to_int) then
+					folder_(files.get_folders[inp.to_int])
 				end if
 			end while 
 		else if inp == "2" then
 			while(true)
 				print("----[files]----")
-				print(ovr.path+"/")
+				print(files.path+"/")
 				i=0
-				for f in ovr.get_files
+				for f in files.get_files
 					print("["+i+"] = "+f.path)
 					i = i + 1
 				end for
@@ -362,8 +390,8 @@ folder_ = function(ovr)
 				if inp == "999" then
 					break
 				end if
-				if ovr.get_files.hasIndex(inp.to_int) then
-					file_(ovr.get_files[inp.to_int])
+				if files.get_files.hasIndex(inp.to_int) then
+					file_(files.get_files[inp.to_int])
 				end if
 			end while
 		else if inp == "999" then
@@ -430,7 +458,8 @@ handles_ = function(lib,shells,computers,routers,files,lanip)
 				s = user_input("select>")
 				if files.hasIndex(s.to_int) then
 					ovr = lib.overflow(files[s.to_int]["mem"],files[s.to_int]["value"],lanip)
-					fileinit_(ovr)
+					files = libs.toFile(ovr)
+					fileinit_(files)
 				else if s == "999" then
 					break
 				end if
