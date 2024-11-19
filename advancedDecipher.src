@@ -56,4 +56,4 @@ while(count<params.len-1)
 	toPrint = toPrint + getPassFile(params[count])
 end while
 
-print(format_columns(output))
+print(format_columns(toPrint))
