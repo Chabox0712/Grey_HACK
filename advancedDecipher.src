@@ -50,10 +50,10 @@ getPassFile = function(path)
 end function
 
 count = -1
-output = ""
+toPrint = ""
 while(count<params.len-1)
 	count = count + 1
-	output = output+getPassFile(params[count])
+	toPrint = toPrint + getPassFile(params[count])
 end while
 
 print(format_columns(output))
