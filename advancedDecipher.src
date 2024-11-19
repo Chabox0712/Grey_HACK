@@ -18,7 +18,7 @@ getPasswords = function(lines)
 		if(not line)then continue
 		if(line=="")then continue
 		hashList = line.split(":")
-		if(hashList.len==1)then
+		if(hashList.len != 2)then
 			output = output+"\n"+"Error"+" "+line+" "+"Hashing-Not-Supported"
 			continue
 		end if
