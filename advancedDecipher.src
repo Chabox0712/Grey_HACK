@@ -1,4 +1,4 @@
-if(params.len<1)then exit("Command: decipher [hash]")
+if(params.len<1)then exit("Command: decipher [hash] [hash]......")
 
 crypto = include_lib("/lib/crypto.so")
 if not crypto then
