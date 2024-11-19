@@ -16,11 +16,11 @@ getPasswords = function(hashList)
 		if(line=="")then continue
 		hashList = line.split(":")
 		if(hashList.len==1)then
-			output = output+"\n"+"invalid-hashing"+" "+line+" "+"error"
+			output = output+"\n"+"Error"+" "+line+" "+"Hashing-Not-Supported"
 			continue
 		end if
 		if(hashList[1].len != 32)then
-			output = output+"\n"+"invalid-hashing"+" "+hashList[1]+" "+"error"
+			output = output+"\n"+hashList[0]+" "+hashList[1]+" "+"Invalid-Hash"
 			continue
 		end if
 		pass = crypto.decipher(hashList[1])
@@ -30,6 +30,9 @@ getPasswords = function(hashList)
 end function
 
 if(typeof(filePath)=="file")then
+	if(filePath.is_binary)then exit("decipher: can't read " + filePath.path + ". Binary file")
+	if(not filePath.has_permission("r"))then exit("decipher: can't read file. Permission denied "+filePath.permissions)
+	if(filePath.get_content.len == 0)then exit("decipher: no users found.")
 	hashList = filePath.get_content.split("\n")
 	output = getPasswords(hashList)
 else
@@ -38,4 +41,4 @@ else
 end if
 
 print(format_columns(output))
-
+print("Done.")
