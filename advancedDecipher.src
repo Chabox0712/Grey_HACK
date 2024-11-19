@@ -12,22 +12,30 @@ obj.computer = obj.shell.host_computer
 
 filePath = obj.computer.File(params[0])
 
-getPasswords = function(lines)
+decipher_ = function(hash) //deciphers one hash provided
+	pass = crypto.decipher(hash)
+	return(pass)
+end function
+
+getPasswords = function(lines)//deciphers the password list splited by \n
 	output = ""
 	for line in lines
 		if(not line)then continue
 		if(line=="")then continue
 		hashList = line.split(":")
 		if(hashList.len != 2)then
-			output = output+"\n"+"Error"+" "+line+" "+"Hashing-Not-Supported"
+			if(line.len == 32)then
+				output = output + "\n" + "No-Name" + " " + line + " " + decipher_(line)
+				continue
+			end if
+			output = output + "\n" + "Error" + " " + line + " " + "Hashing-Not-Supported"
 			continue
 		end if
 		if(hashList[1].len != 32)then
-			output = output+"\n"+hashList[0]+" "+hashList[1]+" "+"Invalid-Hash"
+			output = output + "\n" +hashList[0] + " " + hashList[1] + " " + "Invalid-Hash"
 			continue
 		end if
-		pass = crypto.decipher(hashList[1])
-		output = output+"\n"+hashList[0]+" "+hashList[1]+" "+pass
+		output = output + "\n" + hashList[0] + " " + hashList[1] + " " + decipher_(hashList[1])
 	end for
 	return (output)
 end function
