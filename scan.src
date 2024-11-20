@@ -352,7 +352,7 @@ folder_ = function(ovr)
 	files = ovr
 	while(true)
 		print("----[folder]----")
-		print(files.path+"/")
+		print(files.path)
 		print("please Select Number")
 		print("[1] = folders("+files.get_folders.len+")")
 		print("[2] = files("+files.get_files.len+")")
@@ -361,7 +361,7 @@ folder_ = function(ovr)
 		if inp == "1" then
 			while(true)
 				print("----[folders]----")
-				print(files.path+"/")
+				print(files.path)
 				i=0
 				for f in files.get_folders
 					print("["+i+"] = "+f.path)
@@ -379,7 +379,7 @@ folder_ = function(ovr)
 		else if inp == "2" then
 			while(true)
 				print("----[files]----")
-				print(files.path+"/")
+				print(files.path)
 				i=0
 				for f in files.get_files
 					print("["+i+"] = "+f.path)
