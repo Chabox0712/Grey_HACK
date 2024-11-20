@@ -40,9 +40,9 @@ end function
 getPassFile = function(path)
 	filePath = obj.computer.File(path)
 	if(typeof(filePath)=="file")then
-		if(filePath.is_binary)then exit("decipher: can't read " + filePath.path + ". Binary file")
-		if(not filePath.has_permission("r"))then exit("decipher: can't read file. Permission denied "+filePath.permissions)
-		if(filePath.get_content.len == 0)then exit("decipher: no users found.")
+		if(filePath.is_binary)then return("can't-read " + filePath.path + ". Binary-file")
+		if(not filePath.has_permission("r"))then return("can't-read-file Permission-denied "+filePath.permissions)
+		if(filePath.get_content.len == 0)then return("decipher: no-users-found .")
 		return(getPasswords(filePath.get_content.split("\n")))
 	else
 		return(getPasswords(path.split("\n")))
