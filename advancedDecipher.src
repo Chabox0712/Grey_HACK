@@ -50,7 +50,7 @@ getPassFile = function(path)
 end function
 
 count = -1
-toPrint = ""
+toPrint = "\nUSERNAME HASH PASSWORD"
 while(count<params.len-1)
 	count = count + 1
 	toPrint = toPrint + getPassFile(params[count])
