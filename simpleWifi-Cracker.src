@@ -1,0 +1,19 @@
+number = 0
+output = ""
+crypto = include_lib("/lib/crypto.so")
+crypto.airmon("start", "wlan0")
+wifi_networks = (get_shell().host_computer).wifi_networks("wlan0")
+for wifi in wifi_networks
+    bssid = wifi.split(" ")[0]
+    pwr = wifi.split(" ")[1]
+    essid = wifi.split(" ")[2]
+    number = number + 1
+    output = output + "\n" + number +" " + bssid + " " + essid + " " + pwr
+end for
+
+print(format_columns(output))
+selection = user_input("Enter number # ").to_int
+
+crypto.aireplay(wifi_networks[selection - 1].split(" ")[0],wifi_networks[selection - 1].split(" ")[2],(300000 / wifi_networks[selection - 1].split(" ")[1].remove("%").to_int))
+
+print(crypto.aircrack(current_path+"/file.cap"))
