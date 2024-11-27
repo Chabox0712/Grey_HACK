@@ -51,7 +51,9 @@ end function
 pass = "null"
 
 if(params.indexOf("-p") != null)then pass = params[params.indexOf("-p") + 1]
+
 shellObject = get_shell("root", pass)
+
 if(typeof(shellObject) == "shell")then
 	computerObject = shellObject.host_computer
 else
