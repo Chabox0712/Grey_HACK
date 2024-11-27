@@ -1,14 +1,10 @@
-if(params.len<1)then exit("Command: decipher [hash] [hash]......")
+if(params.len<1)then exit("Command: decipher [hash] [hash] (-p root_password [opt])......")
 
 crypto = include_lib("/lib/crypto.so")
 if not crypto then
 	crypto = include_lib(current_path+"/crypto.so")
 	if(not crypto)then exit("crypto.so not found.")
 end if
-
-obj = {}
-obj.shell = get_shell()
-obj.computer = obj.shell.host_computer
 
 decipher_ = function(hash) //deciphers one hash provided
 	return(crypto.decipher(hash))
@@ -50,10 +46,23 @@ getPassFile = function(path)
 	end if
 end function
 
+pass = "null"
+pPraram = params.indexOf("-p")
+if(pPraram != null)then pass = params[pPraram + 1]
+obj = {}
+obj.shell = get_shell("root", pass)
+if(typeof(obj.shell) == "shell")then
+	obj.computer = obj.shell.host_computer
+else
+	obj.computer = get_shell().host_computer
+	print("Using Custom Shell.")
+end if
 count = -1
 toPrint = "\nUSERNAME HASH PASSWORD"
 while(count<params.len-1)
 	count = count + 1
+	if(params[count] == "-p")then continue
+	if(params[count] == pass)then continue
 	toPrint = toPrint + getPassFile(params[count])
 end while
 
