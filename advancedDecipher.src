@@ -49,6 +49,7 @@ getPassFile = function(path)
 end function
 
 pass = "null"
+
 if(params.indexOf("-p") != null)then pass = params[params.indexOf("-p") + 1]
 shellObject = get_shell("root", pass)
 if(typeof(shellObject) == "shell")then
@@ -62,8 +63,10 @@ else
 		print("<color=#FF7B00>Use ""-p (root_password)"" option")
 	end if
 end if
+
 count = -1
 toPrint = "\nUSERNAME HASH PASSWORD"
+
 while(count<params.len-1)
 	count = count + 1
 	if(params[count] == "-p")then continue
