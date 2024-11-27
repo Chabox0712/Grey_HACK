@@ -7,7 +7,9 @@ if not crypto then
 end if
 
 decipher_ = function(hash) //deciphers one hash provided
-	return(crypto.decipher(hash))
+	password = crypto.decipher(hash)
+	if(not password)then return("Error-null-occured")
+	return(password)
 end function
 
 getPasswords = function(lines)//deciphers the password list splited by \n
