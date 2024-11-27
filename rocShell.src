@@ -723,7 +723,7 @@ end function
 shellCommands["ping"] = {"name":"ping", "description":"Ping a ip.", "args":"[ip]"}
 shellCommands["ping"]["run"] = function(args)
     if args.len < 1 then return print("Invalid ip.")
-    result = current.obj.ping(args)
+    result = current.obj.ping(args[0])
     if result then
         if typeof(result) == "string" then
             print(result) 
