@@ -53,7 +53,12 @@ if(typeof(shellObject) == "shell")then
 	computerObject = shellObject.host_computer
 else
 	computerObject = get_shell().host_computer
-	print("Using Custom Shell.")
+	print("<color=#FF7B00>Using Custom Shell.")
+	if(pass != "null")then
+		print("<color=#FF7B00>Invalid (root_password)")
+	else
+		print("<color=#FF7B00>Use ""-p (root_password)"" option")
+	end if
 end if
 count = -1
 toPrint = "\nUSERNAME HASH PASSWORD"
