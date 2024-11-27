@@ -47,8 +47,7 @@ getPassFile = function(path)
 end function
 
 pass = "null"
-pPraram = params.indexOf("-p")
-if(pPraram != null)then pass = params[pPraram + 1]
+if(params.indexOf("-p") != null)then pass = params[params.indexOf("-p") + 1]
 obj = {}
 obj.shell = get_shell("root", pass)
 if(typeof(obj.shell) == "shell")then
