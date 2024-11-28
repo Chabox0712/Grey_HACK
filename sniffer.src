@@ -23,10 +23,9 @@ file_ = function(output)
 	file = get_shell.host_computer.File(current_path+"/encode.src")
 	if(typeof(file)=="file")then
 		editBeforeMove = "//Creds {"+char(10)+"//"+name1[2]+char(10)+"//"+name1[3]+char(10)+"//"+name1[4]+char(10)+"//"+name1[5]+char(10)+"//"+name1[6]+char(10)+"//}"+char(10)+char(10)+"//[sniffed-code start]"+char(10)+file.get_content+char(10)+"//[sniffed-code end]"
-		encodeFunction = file.get_content.replace("if type == ""enc"" then return", "//").replace("dec", "enc")
+		encodeFunction = file.get_content.replace("if type == ""enc"" then return", "//").replace("dec", "enc")+ char(10) + "get_custom_object.password = Encode(params[0])"
 		file.set_content(editBeforeMove)
 		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+"_"+name1[4].split(" ")[1]+"_"+part1[1]+"_"+part2[1]+".src")
-		encodeFunction = encodeFunction + char(10) + "get_custom_object.password = Encode(params[0])"
 		get_shell().host_computer.touch(current_path, part1[1]+"_"+part2[1]+".src")
 		decodeFile = get_shell().host_computer.File(current_path+"/"+part1[1]+"_"+part2[1]+".src")
 		decodeFile.set_content(encodeFunction)
