@@ -50,7 +50,13 @@ end function
 
 pass = "null"
 
-if(params.indexOf("-p") != null)then pass = params[params.indexOf("-p") + 1]
+if(params.indexOf("-p") != null)then
+	if([params.len] != [params.indexOf("-p")+1])then
+		pass = params[params.indexOf("-p") + 1]
+	else
+		print("Invalid ""-p"" option [root_password] needed")
+	end if
+end if
 
 shellObject = get_shell("root", pass)
 
