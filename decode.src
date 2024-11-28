@@ -1,7 +1,7 @@
 if params.len != 2 then exit("decode [enc | dec] [pass | hash]")
 type = params[0]
 password = params[1]
-Encode = function(password,type)
+Encode = function(password,type)//default ssh encryption decoder for the game
     caesar = function(pass, type)
         nr = pass.len%10
         crypt = function(char, nr, type)
