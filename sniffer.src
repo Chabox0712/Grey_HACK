@@ -17,6 +17,7 @@ iter_ = function()
 	end while
 end function
 file_ = function(output)
+	password = "Error-Somthing-Wrong"
 	name1 = output.split("\n")
 	part1 = name1[5].split(" ")
 	part2 = name1[6].split(" ")
@@ -28,14 +29,17 @@ file_ = function(output)
 		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+"_"+name1[4].split(" ")[1]+"_"+part1[1]+"_"+part2[1]+".src")
 		get_shell().host_computer.touch(current_path, part1[1]+"_"+part2[1]+".src")
 		decodeFile = get_shell().host_computer.File(current_path+"/"+part1[1]+"_"+part2[1]+".src")
-		decodeFile.set_content(encodeFunction)
-		get_shell().build(decodeFile.path, current_path)
-		decodeFile.delete
+		if(typeof(decodeFile) == "file")then
+			decodeFile.set_content(encodeFunction)
+			get_shell().build(decodeFile.path, current_path)
+			decodeFile.delete
+			get_shell.launch(current_path+"/"+part1[1]+"_"+part2[1], part2[1])
+			password = get_custom_object.password
+		end if
 		decodeFile = get_shell().host_computer.File(current_path+"/"+part1[1]+"_"+part2[1])
-		get_shell.launch(current_path+"/"+part1[1]+"_"+part2[1], part2[1])
-		decodeFile.delete
+		if(typeof(decodeFile) == "file")then decodeFile.delete
 	end if
-	print("[+] DECODED PASS : ["+get_custom_object.password+"]")
+	print("[+] DECODED PASS : [ "+password+" ]")
 end function
 clear_screen
 while(true)
@@ -56,7 +60,7 @@ while(true)
 		if folder then
 			file_(output)
 		else
-			folder = get_shell.host_computer.create_folder(current_path, "Sniffed")
+			get_shell.host_computer.create_folder(current_path, "Sniffed")
 			file_(output)
 		end if
 	end if
