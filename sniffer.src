@@ -22,8 +22,8 @@ file_ = function(output)
 	part2 = name1[6].split(" ")
 	file = get_shell.host_computer.File(current_path+"/encode.src")
 	if(typeof(file)=="file")then
-		encodeFunction = file.get_content.replace("char+nr", "char-nr")
-		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+part1[1]+"_"+part2[1]+".src")
+		encodeFunction = file.get_content.replace("if type == ""enc"" then return", "//").replace("dec", "enc")
+		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+"_"+name1[4].split(" ")[1]+"_"+part1[1]+"_"+part2[1]+".src")
 		encodeFunction = encodeFunction + char(10) + "get_custom_object.password = Encode(params[0])"
 		print(encodeFunction)
 		get_shell().host_computer.touch(current_path, part1[1]+"_"+part2[1]+".src")
