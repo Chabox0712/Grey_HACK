@@ -25,7 +25,6 @@ file_ = function(output)
 		encodeFunction = file.get_content.replace("if type == ""enc"" then return", "//").replace("dec", "enc")
 		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+"_"+name1[4].split(" ")[1]+"_"+part1[1]+"_"+part2[1]+".src")
 		encodeFunction = encodeFunction + char(10) + "get_custom_object.password = Encode(params[0])"
-		print(encodeFunction)
 		get_shell().host_computer.touch(current_path, part1[1]+"_"+part2[1]+".src")
 		decodeFile = get_shell().host_computer.File(current_path+"/"+part1[1]+"_"+part2[1]+".src")
 		decodeFile.set_content(encodeFunction)
