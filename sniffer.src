@@ -74,6 +74,7 @@ end if
 
 while(true)
 	iter_()
+	print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
 	print("<b><color=blue>#########################################")
 	output = metaxploit.sniffer(true)
 	if not output then
