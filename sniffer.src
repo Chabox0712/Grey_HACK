@@ -115,7 +115,7 @@ while(true)
 	name1 = output.split("\n")
 	if name1[6].indexOf(" ") > 16 then
 		folder = computerObject.File(current_path+"/Sniffed")
-		if folder then
+		if(typeof(folder) == "file")then
 			file_(output)
 		else
 			computerObject.create_folder(current_path, "Sniffed")
