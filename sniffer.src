@@ -138,7 +138,7 @@ while(true)
 	if not output then
 		print("Unknown error: can't start to listening")
 		wait(0.9)
-		return
+		continue
 	end if
 
 	name1 = output.split("\n")
@@ -151,7 +151,7 @@ while(true)
 		info = info + "\n" + line.remove("<b>").remove("</b>")
 	end for
 	
-	print(char(10)+name1[0]+format_columns(info)+char(10))
+	print(char(10)+"<b>"+name1[0]+"</b>"+format_columns(info)+char(10))
 
 	if name1[6].len == 39 then
 		folder = computerObject.File(current_path+"/Sniffed")
