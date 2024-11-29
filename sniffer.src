@@ -3,9 +3,9 @@ if((params.indexOf("-h") != null) or (params.indexOf("--help") != null)) then ex
 iter_ = function()
 	while(true)
 		if not computerObject.is_network_active then
-		print("<b>[!] No internet\n<b><<<=== GET INTERNET ACCESS ===>>>")
-		wait(2)
-		continue
+			print("<b>[!] No internet\n<b><<<=== GET INTERNET ACCESS ===>>>")
+			wait(0.5)
+			continue
 		else
 			break
 		end if
@@ -13,11 +13,13 @@ iter_ = function()
 end function
 
 file_ = function(output)
+
 	password = "Error-Somthing-Wrong"
 	name1 = output.split("\n")
 	part1 = name1[5].split(" ")
 	part2 = name1[6].split(" ")
 	file = computerObject.File(current_path+"/encode.src")
+
 	if(typeof(file)=="file")then
 		editBeforeMove = "//Creds {"+format_columns(char(10)+"// "+name1[2].remove("<b>").remove("</b>")+char(10)+"// "+name1[3].remove("<b>").remove("</b>")+char(10)+"// "+name1[4].remove("<b>").remove("</b>")+char(10)+"// "+name1[5].remove("<b>").remove("</b>")+char(10)+"// "+name1[6].remove("<b>").remove("</b>")+char(10))+char(10)+"//}"+char(10)+char(10)+"//[sniffed-code start]"+char(10)+file.get_content+char(10)+"//[sniffed-code end]"
 		
@@ -42,6 +44,7 @@ file_ = function(output)
 		file.move(current_path+"/Sniffed", name1[3].split(" ")[1]+"_"+name1[4].split(" ")[1]+"_"+part1[1]+"_"+part2[1]+".src")
 		computerObject.touch(current_path, part1[1]+"_"+part2[1]+".src")
 		decodeFile = computerObject.File(current_path+"/"+part1[1]+"_"+part2[1]+".src")
+
 		if(typeof(decodeFile) == "file")then
 			decodeFile.set_content(encodeFunction)
 			buildResult = shellObject.build(decodeFile.path, current_path)
@@ -50,10 +53,14 @@ file_ = function(output)
 			shellObject.launch(current_path+"/"+part1[1]+"_"+part2[1], part2[1])
 			if(get_custom_object.hasIndex("password"))then password = get_custom_object.password
 		end if
+
 		decodeFile = computerObject.File(current_path+"/"+part1[1]+"_"+part2[1])
 		if(typeof(decodeFile) == "file")then decodeFile.delete
+
 	end if
-	print("[+] DECODED PASS : [ <b>"+password+"</b> ]")
+
+	print("[+] DECODED PASS : [ <b>"+password+"</b> ]"+char(10))
+
 end function
 
 clear_screen
@@ -101,6 +108,7 @@ print("<b>Make sure that you are running the program in the same directory as yo
 
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
+
 if(typeof(metaSourceFile) == "file")then
 	metaSourceFile.set_content(getMetaxploit)
 	shellObject.build(metaSourceFile.path, current_path)
@@ -122,16 +130,29 @@ if(metaxploit == "error")then exit(char(10)+"Failed to get metaxploit.so")
 
 while(true)
 	iter_()
+
 	print("<b><color=blue>#########################################")
+
 	output = metaxploit.sniffer(true)
+
 	if not output then
 		print("Unknown error: can't start to listening")
 		wait(0.9)
 		return
 	end if
-	print(output)
+
 	name1 = output.split("\n")
-	if name1[6].indexOf(" ") > 16 then
+
+	info = null
+
+	for line in name1
+		if(line == name1[0])then continue
+		info = info + "\n" + line.remove("<b>").remove("</b>")
+	end for
+	
+	print(name1[0]+format_columns(info)+char(10))
+
+	if name1[6].len == 39 then
 		folder = computerObject.File(current_path+"/Sniffed")
 		if(typeof(folder) == "file")then
 			file_(output)
@@ -140,4 +161,5 @@ while(true)
 			file_(output)
 		end if
 	end if
+
 end while
