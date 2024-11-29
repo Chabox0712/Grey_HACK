@@ -113,8 +113,6 @@ while(true)
 	end if
 	print(output)
 	name1 = output.split("\n")
-	part1 = name1[5].split(" ")
-	part2 = name1[6].split(" ")
 	if name1[6].indexOf(" ") > 16 then
 		folder = computerObject.File(current_path+"/Sniffed")
 		if folder then
