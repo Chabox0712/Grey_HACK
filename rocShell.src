@@ -1138,8 +1138,7 @@ commands["hashdump"]["run"] = function(args)
 										tempContent = filetosavePassword.get_content
 										tempContent == tempContent//.remove(char(10)) 
 										filetosavePassword.set_content(tempContent+char(10)+p)
-										end if
-									//end if
+									end if
 								end for
 							end if
 						end if
