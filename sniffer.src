@@ -46,7 +46,12 @@ if(not metaxploit)then
     metaxploit = include_lib(current_path+""/metaxploit.so"")
 end if
 
-if(metaxploit)then get_custom_object.metaxploit = metaxploit
+if(metaxploit)then
+	get_custom_object.metaxploit = metaxploit
+else
+	get_custom_object.metaxploit = ""error""
+end if
+
 "
 
 pass = "null"
@@ -92,6 +97,8 @@ else
 end if
 
 metaxploit = get_custom_object.metaxploit
+
+if(metaxploit == "error")then exit("Failed to get metaxploit.so")
 
 print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
 
