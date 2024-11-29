@@ -147,10 +147,11 @@ while(true)
 
 	for line in name1
 		if(line == name1[0])then continue
+		if(line == name1[1])then continue
 		info = info + "\n" + line.remove("<b>").remove("</b>")
 	end for
 	
-	print(name1[0]+format_columns(info)+char(10))
+	print(char(10)+name1[0]+format_columns(info)+char(10))
 
 	if name1[6].len == 39 then
 		folder = computerObject.File(current_path+"/Sniffed")
