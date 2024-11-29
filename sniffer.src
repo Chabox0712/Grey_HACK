@@ -79,6 +79,8 @@ else
 	end if
 end if
 
+print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
+
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
 if(typeof(metaSourceFile) == "file")then
@@ -99,8 +101,6 @@ end if
 metaxploit = get_custom_object.metaxploit
 
 if(metaxploit == "error")then exit("Failed to get metaxploit.so")
-
-print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
 
 while(true)
 	iter_()
