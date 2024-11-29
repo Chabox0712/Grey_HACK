@@ -201,7 +201,7 @@ getRshellAPI = function(metaxploit)
         clearInterface(self.interface)
         return ret
     end function
-    api.getpointOfNotReturns = function(self, publicIp)
+    api.getRshells = function(self, publicIp)
         clearInterface(self.interface)
         if typeof(self.connection) != "shell" then return null
         self.interface.ret = null
