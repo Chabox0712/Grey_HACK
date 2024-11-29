@@ -79,7 +79,7 @@ else
 	end if
 end if
 
-print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
+print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder and metaxploit.so in ""/lib/metaxploit.so"" or current_path for this to work </b>")
 
 computerObject.touch(current_path, "metaxploit.src")
 metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
@@ -92,15 +92,15 @@ if(typeof(metaSourceFile) == "file")then
 		shellObject.launch(metaExecutable.path)
 		metaExecutable.delete
 	else
-		exit("Can't find binary file")
+		exit(char(10)+"Can't find binary file")
 	end if
 else
-	exit("Permission Denied.")
+	exit(char(10)+"Permission Denied.")
 end if
 
 metaxploit = get_custom_object.metaxploit
 
-if(metaxploit == "error")then exit("Failed to get metaxploit.so")
+if(metaxploit == "error")then exit(char(10)+"Failed to get metaxploit.so")
 
 while(true)
 	iter_()
