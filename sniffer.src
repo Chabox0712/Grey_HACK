@@ -132,25 +132,6 @@ metaxploit = get_custom_object.metaxploit
 
 if(metaxploit == "error")then pointOfNotReturn(char(10)+"Failed to get metaxploit.so")
 
-computerObject.touch(current_path, "metaxploit.src")
-metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
-
-if(typeof(metaSourceFile) == "file")then
-	metaSourceFile.set_content(decodeCode)
-	shellObject.build(metaSourceFile.path, current_path)
-	metaSourceFile.delete
-	metaExecutable = computerObject.File(current_path+"/metaxploit")
-	if(typeof(metaExecutable) == "file")then
-		shellObject.launch(metaExecutable.path, getMetaxploit)
-		print(get_custom_object.output)
-		metaExecutable.delete
-	else
-		pointOfNotReturn(char(10)+"Can't find binary file")
-	end if
-else
-	pointOfNotReturn(char(10)+"Permission Denied.")
-end if
-
 while(true)
 	iter_()
 
