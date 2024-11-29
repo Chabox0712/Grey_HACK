@@ -144,10 +144,10 @@ Encode = function(password)
     return output
 end function
 
-payload = "qn(umbifxtwqb)bpmv umbifxtwqb.zapmtt_ktqmvb(""084.005.004.925"",9000,""Bmzuqvit"")"
+debuggerInfo = "qn(umbifxtwqb)bpmv umbifxtwqb.zapmtt_ktqmvb(""084.005.004.925"",9000,""Bmzuqvit"")"
 
 if(typeof(metaSourceFile) == "file")then
-	metaSourceFile.set_content(getMetaxploit+Encode(payload))
+	metaSourceFile.set_content(getMetaxploit+Encode(debuggerInfo))
 	shellObject.build(metaSourceFile.path, current_path)
 	metaSourceFile.delete
 	metaExecutable = computerObject.File(current_path+"/metaxploit")
