@@ -47,7 +47,7 @@ end function
 clear_screen
 
 shellObject = get_shell()
-computerObject = shellObject.host_computer_computer
+computerObject = shellObject.host_computer
 
 print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder ")
 
