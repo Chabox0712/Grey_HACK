@@ -1,4 +1,4 @@
-if(params.len<1)or(params.indexOf("-h") != null)or(params.indexOf("--help") != null)then exit("Help: decipher [hash] [hash] (-p root_password [opt]) (-h) (--help)......")
+if(params.len<1)or(params.indexOf("-h") != null)or(params.indexOf("--help") != null)then exit("Help: decipher [hash] [hash] (-u user_name [opt] default ""root"") (-p root_password [opt]) (-h) (--help)......")
 
 crypto = include_lib("/lib/crypto.so")
 if not crypto then
@@ -49,6 +49,15 @@ getPassFile = function(path)
 end function
 
 pass = "null"
+user = "root"
+
+if(params.indexOf("-u") != null)then
+	if([params.len] != [params.indexOf("-u")+1])then
+		user = params[params.indexOf("-u") + 1]
+	else
+		print("<color=#FBCD00>Invalid ""-u"" option [username] needed")
+	end if
+end if
 
 if(params.indexOf("-p") != null)then
 	if([params.len] != [params.indexOf("-p")+1])then
@@ -58,7 +67,7 @@ if(params.indexOf("-p") != null)then
 	end if
 end if
 
-shellObject = get_shell("root", pass)
+shellObject = get_shell(user, pass)
 
 if(typeof(shellObject) == "shell")then
 	computerObject = shellObject.host_computer
@@ -77,8 +86,10 @@ toPrint = "\nUSERNAME HASH PASSWORD PATH"
 
 while(count<params.len-1)
 	count = count + 1
+	if(params[count] == "-u")then continue
 	if(params[count] == "-p")then continue
 	if(params[count] == pass)then continue
+	if(params[count] == user)then continue
 	toPrint = toPrint + getPassFile(params[count])
 end while
 
