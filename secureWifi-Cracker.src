@@ -42,7 +42,6 @@ while(true)
 	for file in allFiles
 		if(libs.typeofFile(file) != "bin")then continue
 		if(file.name != "file.cap")then continue
-		print(file.name+" delete.")
 		file.delete
 	end for
 	clear_screen
@@ -88,7 +87,7 @@ while(true)
 			wifiFolder = obj.Computer.File(obj.pwd+"/Wifi")
 		end if
 	end if
-print(wifiFolder.path)
+
 	wifiFolder.chmod("o-wrx",true)
 	wifiFolder.chmod("g-wrx",true)
 	wifiFolder.chmod("u-wrx",true)
@@ -101,12 +100,10 @@ print(wifiFolder.path)
 	wifiList = ""
 	for network in availableNetworks
 		pass = "not-cracked-yet"
-
 		networkInfo = network.split(" ")
 		BSSID = networkInfo[0]
 		POWER = networkInfo[1]
 		ESSID = networkInfo[2]
-		
 		wifiFile = obj.Computer.File(wifiFolder.path+"/"+ESSID)
 		i = i + 1
 		if wifiFile then
