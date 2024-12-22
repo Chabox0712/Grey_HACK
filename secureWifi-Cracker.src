@@ -97,11 +97,11 @@ print(wifiFolder.path)
 	
 	availableNetworks = obj.Computer.wifi_networks(netorkDevice)
 	
-	pass = "no-password"
-
 	i = 0
 	wifiList = ""
 	for network in availableNetworks
+		pass = "not-cracked-yet"
+
 		networkInfo = network.split(" ")
 		BSSID = networkInfo[0]
 		POWER = networkInfo[1]
@@ -115,7 +115,7 @@ print(wifiFolder.path)
 			if not pass then wifiFile.delete
 			continue
 		end if
-		wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID + pass
+		wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID + " <color=red>" + pass
 	end for
 
 	print(format_columns(wifiList)+char(10))
