@@ -1,0 +1,96 @@
+if(params.len<1)or(params.indexOf("-h") != null)or(params.indexOf("--help") != null)then exit("Help: decipher [hash] [hash] (-u user_name [opt] default ""root"") (-p root_password [opt]) (-h) (--help)......")
+
+crypto = include_lib("/lib/crypto.so")
+if not crypto then
+	crypto = include_lib(current_path+"/crypto.so")
+	if(not crypto)then exit("crypto.so not found.")
+end if
+
+decipher_ = function(hash) //deciphers one hash provided
+	password = crypto.decipher(hash)
+	if(not password)then return("Error-null-occured")
+	return(password)
+end function
+
+getPasswords = function(lines, path)//deciphers the password list splited by \n
+	output = ""
+	for line in lines
+		if(not line)then continue
+		if(line=="")then continue
+		hashList = line.split(":")
+		if(hashList.len != 2)then
+			if(line.len == 32)then
+				output = output + "\n" + "No-Name" + " " + line + " " + decipher_(line) + " " + path
+				continue
+			end if
+			output = output + "\n" + "Error" + " " + line + " " + "Hashing-Not-Supported"  + " " + path
+			continue
+		end if
+		if(hashList[1].len != 32)then
+			output = output + "\n" +hashList[0] + " " + hashList[1] + " " + "Invalid-Hash"  + " " + path
+			continue
+		end if
+		output = output + "\n" + hashList[0] + " " + hashList[1] + " " + decipher_(hashList[1])  + " " + path
+	end for
+	return (output)
+end function
+
+getPassFile = function(path)
+	filePath = computerObject.File(path)
+	if(typeof(filePath)=="file")then
+		if(filePath.is_folder)then return("\ncan't-read "+ filePath.name + " file-is-folder"  + " " + filePath.path)
+		if(filePath.is_binary)then return("\ncan't-read " + filePath.name + " Binary-file" + " " + filePath.path)
+		if(not filePath.has_permission("r"))then return("\ncan't-read-file Permission-denied "+filePath.permissions+ " " + filePath.path)
+		if(filePath.get_content.len == 0)then return("\ndecipher: no-users-found ."+ " " + filePath.path)
+		return(getPasswords(filePath.get_content.split("\n"), filePath.path))
+	else
+		return(getPasswords(path.split("\n"), "/Params"))
+	end if
+end function
+
+pass = "null"
+user = "root"
+
+if(params.indexOf("-u") != null)then
+	if([params.len] != [params.indexOf("-u")+1])then
+		user = params[params.indexOf("-u") + 1]
+	else
+		print("<color=#FBCD00>Invalid ""-u"" option [username] needed")
+	end if
+end if
+
+if(params.indexOf("-p") != null)then
+	if([params.len] != [params.indexOf("-p")+1])then
+		pass = params[params.indexOf("-p") + 1]
+	else
+		print("<color=#FBCD00>Invalid ""-p"" option [root_password] needed")
+	end if
+end if
+
+shellObject = get_shell(user, pass)
+
+if(typeof(shellObject) == "shell")then
+	computerObject = shellObject.host_computer
+else
+	computerObject = get_shell().host_computer
+	print("<color=#FF7B00>Using Custom Shell.")
+	if(pass != "null")then
+		print("<color=#FF7B00>Invalid (root_password)")
+	else
+		print("<color=#FF7B00>Use ""-p (root_password)"" option")
+	end if
+end if
+
+count = -1
+toPrint = "\nUSERNAME HASH PASSWORD PATH"
+
+while(count<params.len-1)
+	count = count + 1
+	if(params[count] == "-u")then continue
+	if(params[count] == "-p")then continue
+	if(params[count] == pass)then continue
+	if(params[count] == user)then continue
+	toPrint = toPrint + getPassFile(params[count])
+end while
+
+exit(format_columns(toPrint.remove(char(10)))+char(10))
