@@ -1,5 +1,5 @@
 obj = {}
-obj.Computer = get_shell.host_computer
+obj.Computer = get_shell("root","test").host_computer
 obj.file = obj.Computer.File("/")
 obj.pwd = current_path
 
@@ -35,7 +35,7 @@ libs.typeofFile = function(fileObject)//return file type "txt" "fld" "bin" else 
     return "txt"
 end function
 
-if(active_user != "root") then exit("<color=red>[-] Root access required!")
+//if(active_user != "root") then exit("<color=red>[-] Root access required!")
 
 while(true)
 	allFiles = libs.allFiles(obj.file)
@@ -96,23 +96,14 @@ while(true)
 	wifiFolder.set_group("root",true)
 	
 	availableNetworks = obj.Computer.wifi_networks(netorkDevice)
-
-	wifiPower = "nullByte"
-	wifiBssid = "nullByte"
-	wifiEssid = "nullByte"
-	wifiList = "No BSSID PWR ESSID PASSWORD"
 	
 	i = 0
-	
+	wifiList = ""
 	for network in availableNetworks
 		networkInfo = network.split(" ")
 		BSSID = networkInfo[0]
 		POWER = networkInfo[1].remove("%")
 		ESSID = networkInfo[2]
-		
-		wifiPower = wifiPower + " " + POWER
-		wifiBssid = wifiBssid + " " + BSSID
-		wifiEssid = wifiEssid + " " + ESSID
 		
 		wifiFile = obj.Computer.File(wifiFolder.path+"/"+ESSID)
 		i = i + 1
@@ -127,21 +118,17 @@ while(true)
 
 	print(char(10)+format_columns(wifiList)+char(10))
 	
-	wifiPower = wifiPower.split(" ")
-	wifiBssid = wifiBssid.split(" ")
-	wifiEssid = wifiEssid.split(" ")
-	
-	option = user_input("Enter the Number of the WIFI to Attack => ", false, false).to_int
+	option = user_input("Enter the Number of the WIFI to Attack (exit) => ", false, false).to_int
+	if(option == "exit")then exit("Exit.")
 	if typeof(option) != "number" or (option < 1 or option > availableNetworks.len) then
 		print("<color=red>Invalid input. Type a valid number")
 		wait(0.5)
 		continue
 	end if
 
-	targetPower = wifiPower[option]
-	targetBssid = wifiBssid[option]
-	targetEssid = wifiEssid[option]
-	ack = 3540+(100-targetPower.to_int)*95
+	targetBssid = availableNetworks[option-1].split(" ")[0]
+	targetEssid = availableNetworks[option-1].split(" ")[2]
+	ack = 3540+(100-availableNetworks[option-1].split(" ")[1].to_int)*95
 
 	print("<b>Calculated ACK <color=#0003B7>"+ack+"</color>.")
 	allFiles = libs.allFiles(obj.file)

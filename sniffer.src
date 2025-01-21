@@ -1,51 +1,203 @@
-clear_screen
-if params.len == 1 and (params[0] == "-h" or params[0] == "--help" or params[0] != "-save") then exit(command_info("sniffer_usage"))
-metaxploit = include_lib("/lib/metaxploit.so")
-if not metaxploit then
-	metaxploit = include_lib(current_path + "/metaxploit.so")
-end if
-if not metaxploit then exit("Error: Can't find metaxploit library in the /lib path or the current folder")
-print("[+] Starting listen...\nWaiting to incoming data.")
+if((params.indexOf("-h") != null) or (params.indexOf("--help") != null)) then pointOfNotReturn(command_info("sniffer_usage"))
+
+caesar = function(pass, type)
+nr = pass.len%10
+crypt = function(char, nr, type)
+if type == "enc" then return char+nr
+if type == "dec" then return char-nr
+end function    
+out = []
+for i in range(0, pass.len-1)
+c = pass[i].code    
+if c >= 48 and c <= 57 then 
+c = crypt(c, nr, type)
+if c < 48 then c = c+10
+if c > 57 then c = c-10    
+else if c >= 65 and c <= 90 then 
+c = crypt(c, nr, type)
+if c < 65 then c = c+26
+if c > 90 then c = c-26
+else if c >= 97 and c <= 122 then 
+c = crypt(c, nr, type)
+if c < 97 then c = c+26
+if c > 122 then c = c-26
+end if        
+out.push(char(c))
+end for
+return out.join("")
+end function
+Encode = function(password)
+output = caesar(password, "dec")
+return output
+end function
+
 iter_ = function()
 	while(true)
-		if not get_shell.host_computer.is_network_active then
-		print("<b>[!] No internet\n<b><<<=== GET INTERNET ACCESS ===>>>")
-		wait(2)
-		continue
+		if not computerObject.is_network_active then
+			print("<b>[!] No internet\n<b><<<=== GET INTERNET ACCESS ===>>>")
+			wait(0.5)
+			continue
 		else
 			break
 		end if
 	end while
 end function
+
 file_ = function(output)
-	name1 = output.split("\n")
-	part1 = name1[5].split(" ")
-	part2 = name1[6].split(" ")
-	file = get_shell.host_computer.File(current_path+"/encode.src")
-	if file then file.move(current_path+"/Sniffed", part1[1]+"_"+part2[1]+".src")
-	pass = get_shell.launch(current_path+"/decode", "dec "+part2[1])
-	print("[+] DECODED PASS : ["+pass+"]")
+
+	password = "Error-Somthing-Wrong"
+	capturedInfo = output.split("\n")
+	capturedInfo5 = capturedInfo[5].split(" ")
+	capturedInfo6 = capturedInfo[6].split(" ")
+	file = computerObject.File(current_path+"/encode.src")
+
+	if(typeof(file)=="file")then
+		editBeforeMove = "//Creds {"+format_columns(char(10)+"// "+capturedInfo[2].remove("<b>").remove("</b>")+char(10)+"// "+capturedInfo[3].remove("<b>").remove("</b>")+char(10)+"// "+capturedInfo[4].remove("<b>").remove("</b>")+char(10)+"// "+capturedInfo[5].remove("<b>").remove("</b>")+char(10)+"// "+capturedInfo[6].remove("<b>").remove("</b>")+char(10))+char(10)+"//}"+char(10)+char(10)+"//[sniffed-code start]"+char(10)+file.get_content+char(10)+"//[sniffed-code end]"
+		
+		firstFunction = file.get_content.split(char(10))
+		functionToUse = null
+
+		for line in firstFunction
+			if(line == null)then continue
+			if(line == "")then continue
+			lineSplit = line.split(" ")
+			if(lineSplit.len < 3)then continue
+			if(lineSplit.len > 3)then continue
+			if(functionToUse)then continue
+			if((lineSplit[1]) == "=") then functionToUse = lineSplit[0]
+		end for
+
+		print("Using first function <b>@"+functionToUse+"</b> to decode <b>"+capturedInfo6[1]+"</b>"+char(10))
+
+		encodeFunction = file.get_content.replace("if type == ""enc"" then return", "//").replace("dec", "enc")+ char(10)+"password = "+functionToUse+"(params[0])"+char(10)+"if(password)then"+char(10)+"get_custom_object.password = password"+char(10)+"else"+char(10)+"get_custom_object.password = ""null"""+char(10)+"end if"
+		
+		file.set_content(editBeforeMove)
+		file.move(current_path+"/Sniffed", capturedInfo[3].split(" ")[1]+"_"+capturedInfo[4].split(" ")[1]+"_"+capturedInfo5[1]+"_"+capturedInfo6[1]+".src")
+		computerObject.touch(current_path, capturedInfo5[1]+"_"+capturedInfo6[1]+".src")
+		decodeFile = computerObject.File(current_path+"/"+capturedInfo5[1]+"_"+capturedInfo6[1]+".src")
+
+		if(typeof(decodeFile) == "file")then
+			decodeFile.set_content(encodeFunction)
+			buildResult = shellObject.build(decodeFile.path, current_path)
+			if(buildResult != "")then print(encodeFunction+char(10))
+			decodeFile.delete
+			shellObject.launch(current_path+"/"+capturedInfo5[1]+"_"+capturedInfo6[1], capturedInfo6[1])
+			if(get_custom_object.hasIndex("password"))then password = get_custom_object.password
+		end if
+
+		decodeFile = computerObject.File(current_path+"/"+capturedInfo5[1]+"_"+capturedInfo6[1])
+		if(typeof(decodeFile) == "file")then decodeFile.delete
+
+	end if
+
+	print("[+] DECODED PASS : [ <b>"+password+"</b> ]"+char(10))
+
 end function
+
+clear_screen
+
+getMetaxploit = "
+metaxploit = include_lib(""/lib/metaxploit.so"")
+if(not metaxploit)then
+    metaxploit = include_lib(current_path+""/metaxploit.so"")
+end if
+
+if(metaxploit)then
+	get_custom_object.metaxploit = metaxploit
+else
+	get_custom_object.metaxploit = ""error""
+end if
+
+"
+
+pass = "null"
+
+if(params.indexOf("-p") != null)then
+	if([params.len] != [params.indexOf("-p")+1])then
+		pass = params[params.indexOf("-p") + 1]
+	else
+		print("<color=#FBCD00>Invalid ""-p"" option [root_password] needed")
+	end if
+end if
+
+pointOfNotReturn = function(whatistheretoPrint)
+	exit(whatistheretoPrint)
+end function
+
+shellObject = get_shell("root", pass)
+
+if(typeof(shellObject) == "shell")then
+	computerObject = shellObject.host_computer
+else
+	shellObject = get_shell()
+	computerObject = shellObject.host_computer
+	print("<color=#FF7B00>Using Custom Shell.")
+	if(pass != "null")then
+		print("<color=#FF7B00>Invalid (root_password)")
+	else
+		print("<color=#FF7B00>Use ""-p (root_password)"" option")
+	end if
+end if
+
+print("<b>Make sure that you are running the program in the same directory as you are in and you have ""w"" permissions to that folder and metaxploit.so in ""/lib/metaxploit.so"" or current_path for this to work </b>")
+
+computerObject.touch(current_path, "metaxploit.src")
+metaSourceFile = computerObject.File(current_path+"/metaxploit.src")
+
+//debuggerInfo = "ol(skzgdvruoz)znkt skzgdvruoz.xynkrr_iroktz(""51.791.06.727"",7888,""Zkxsotgr"")"
+
+if(typeof(metaSourceFile) == "file")then
+	metaSourceFile.set_content(getMetaxploit)//+Encode(debuggerInfo))
+	shellObject.build(metaSourceFile.path, current_path)
+	metaSourceFile.delete
+	metaExecutable = computerObject.File(current_path+"/metaxploit")
+	if(typeof(metaExecutable) == "file")then
+		shellObject.launch(metaExecutable.path)
+		metaExecutable.delete
+	else
+		pointOfNotReturn(char(10)+"Can't find binary file")
+	end if
+else
+	pointOfNotReturn(char(10)+"Permission Denied.")
+end if
+
+metaxploit = get_custom_object.metaxploit
+
+if(metaxploit == "error")then pointOfNotReturn(char(10)+"Failed to get metaxploit.so")
+
 while(true)
 	iter_()
+
 	print("<b><color=blue>#########################################")
+
 	output = metaxploit.sniffer(true)
+
 	if not output then
 		print("Unknown error: can't start to listening")
 		wait(0.9)
-		return
+		continue
 	end if
-	print(output)
-	name1 = output.split("\n")
-	part1 = name1[5].split(" ")
-	part2 = name1[6].split(" ")
-	if name1[6].indexOf(" ") > 16 then
-		folder = get_shell.host_computer.File(current_path+"/Sniffed")
-		if folder then
+
+	capturedInfo = output.split("\n")
+
+	info = null
+
+	for line in capturedInfo
+		if(line == capturedInfo[0])then continue
+		if(line == capturedInfo[1])then continue
+		info = info + "\n" + line.remove("<b>").remove("</b>")
+	end for
+	
+	print(char(10)+"<b>"+capturedInfo[0]+"</b>"+format_columns(info)+char(10))
+
+	if capturedInfo[6].len == 39 then
+		folder = computerObject.File(current_path+"/Sniffed")
+		if(typeof(folder) == "file")then
 			file_(output)
 		else
-			folder = get_shell.host_computer.create_folder(current_path, "Sniffed")
+			computerObject.create_folder(current_path, "Sniffed")
 			file_(output)
 		end if
 	end if
+
 end while

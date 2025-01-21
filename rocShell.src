@@ -447,8 +447,8 @@ libs.corruptLog = function(fileObject) //overwrite system.log by copy the smalle
     end for
     if not toCopy then return print("No file to overwrite log! try using ""touch"".")
     logFile = self.getFile("/var/system.log", fileObject)
-    if not logFile then print("log file not found!")
-    tryDelete = logFile.delete
+    if not logFile then return print("log file not found!")
+    if logFile then tryDelete = logFile.delete
     if tryDelete == "" then print("Log file deleted.") else return print("Error: " + tryDelete)
     tryCopy = toCopy.copy("/var", "system.log")
     if tryCopy == true then return print("All steps done. Log cleared.")
@@ -723,7 +723,7 @@ end function
 shellCommands["ping"] = {"name":"ping", "description":"Ping a ip.", "args":"[ip]"}
 shellCommands["ping"]["run"] = function(args)
     if args.len < 1 then return print("Invalid ip.")
-    result = current.obj.ping(args)
+    result = current.obj.ping(args[0])
     if result then
         if typeof(result) == "string" then
             print(result) 
@@ -791,13 +791,13 @@ end if
         return print("Payload upload failed: " + tryUpload)
     end if
     if payload then
-        current.computer.touch(args[1], "..src")
-        payloadFile = current.computer.File(args[1] + "/..src")
+        current.computer.touch(args[1], "payload.src")
+        payloadFile = current.computer.File(args[1] + "/payload.src")
         if not payloadFile then return print("compile failed.")
         payloadFile.set_content(payload)
         current.obj.build(payloadFile.path, parent_path(payloadFile.path))
     end if
-    current.obj.launch(args[1] + "/.", args[2:].join(" "))
+    current.obj.launch(args[1] + "/payload", args[2:].join(" "))
     interface = get_custom_object
     for unsecureVariables in interface
         if @unsecureVariables["key"] == "__isa" or @unsecureVariables["key"] == "classID" then continue
@@ -1138,7 +1138,6 @@ commands["hashdump"]["run"] = function(args)
 										tempContent = filetosavePassword.get_content
 										tempContent == tempContent//.remove(char(10)) 
 										filetosavePassword.set_content(tempContent+char(10)+p)
-										end if
 									end if
 								end for
 							end if
