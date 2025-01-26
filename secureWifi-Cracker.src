@@ -1,5 +1,5 @@
 obj = {}
-obj.Computer = get_shell("root","test").host_computer
+obj.Computer = get_shell().host_computer
 obj.file = obj.Computer.File("/")
 obj.pwd = current_path
 
@@ -42,7 +42,6 @@ while(true)
 	for file in allFiles
 		if(libs.typeofFile(file) != "bin")then continue
 		if(file.name != "file.cap")then continue
-		print(file.name+" delete.")
 		file.delete
 	end for
 	clear_screen
@@ -83,7 +82,7 @@ while(true)
 	if (typeof(wifiFolder)!="file") then
 		wifiFolder = obj.Computer.create_folder("/usr", "Wifi")
 		wifiFolder = obj.Computer.File("/usr/Wifi")
-		if not wifiFolder then
+		if (typeof(wifiFolder) != "file") then
 			wifiFolder = obj.Computer.create_folder(obj.pwd, "Wifi")
 			wifiFolder = obj.Computer.File(obj.pwd+"/Wifi")
 		end if
@@ -100,23 +99,23 @@ while(true)
 	i = 0
 	wifiList = ""
 	for network in availableNetworks
+		pass = "not-cracked-yet"
 		networkInfo = network.split(" ")
 		BSSID = networkInfo[0]
-		POWER = networkInfo[1].remove("%")
+		POWER = networkInfo[1]
 		ESSID = networkInfo[2]
-		
 		wifiFile = obj.Computer.File(wifiFolder.path+"/"+ESSID)
 		i = i + 1
 		if wifiFile then
 			pass = wifiFile.get_content
-			wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID + " " + pass
+			wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID + " " + pass.remove(char(10))
 			if not pass then wifiFile.delete
 			continue
 		end if
-		wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID
+		wifiList = wifiList + "\n" + i + " " + BSSID + " " + POWER + " " + ESSID + " <color=red>" + pass
 	end for
 
-	print(char(10)+format_columns(wifiList)+char(10))
+	print(format_columns(wifiList)+char(10))
 	
 	option = user_input("Enter the Number of the WIFI to Attack (exit) => ", false, false).to_int
 	if(option == "exit")then exit("Exit.")
@@ -128,7 +127,8 @@ while(true)
 
 	targetBssid = availableNetworks[option-1].split(" ")[0]
 	targetEssid = availableNetworks[option-1].split(" ")[2]
-	ack = 3540+(100-availableNetworks[option-1].split(" ")[1].to_int)*95
+
+	ack = 3540+(100-availableNetworks[option-1].split(" ")[1].remove("%").to_int)*95
 
 	print("<b>Calculated ACK <color=#0003B7>"+ack+"</color>.")
 	allFiles = libs.allFiles(obj.file)
@@ -162,7 +162,7 @@ while(true)
 		end for
 	end if
 
-	y = user_input("[+] Do You want to Connect to <color=#8400B4>"+targetEssid+"</color=#8400B4blue> [y|n => ", false, true)
+	y = user_input("[+] Do You want to Connect to <color=#8400B4>"+targetEssid+"</color=#8400B4blue> password <"+password+"> [y|n => ", false, true)
 	if y == "y" or y == "Y" then
 		if password == null then
 			password = user_input("[-] Enter password => ", true, false)
