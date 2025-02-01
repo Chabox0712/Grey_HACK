@@ -1,0 +1,334 @@
+ServiceInstaller = {}
+ServiceInstaller = new ServiceInstaller
+ServiceInstaller.aptclient = null 
+ServiceInstaller.Services = []
+ServiceInstaller.Service_id = 0
+ServiceInstaller.Meta = null
+ServiceInstaller.LoadApt=function()
+    apt = include_lib("/lib/aptclient.so")
+    if not apt then
+        apt = include_lib(current_path + "/aptclient.so")
+    end if
+    if not apt then exit("Error: Missing aptclient.so library in the /lib path or the current folder")
+    self.aptclient =  apt
+end function
+ServiceInstaller.LoadMeta=function()
+    m = include_lib("/lib/metaxploit.so")
+    if not m then
+        m = include_lib(current_path + "/metaxploit.so")
+    end if
+    if m then self.Meta =  m
+end function
+ServiceInstaller.Update=function()
+    output = self.aptclient.update
+    if output then print(output)
+end function
+ServiceInstaller.ShowOptions = function(options,ex=false,msg="",dirrectvalid=true)
+    print(msg)
+    i = 0
+    for option in options
+        print("<color=#36ba01>[<color=#fff>"+ i +"</color>] - <color=#fff>" + option)
+        i = i + 1
+    end for
+    lastOp = "Back"
+    if ex then lastOp= "Exit"
+    print("<color=#36ba01>[<color=#fff>"+ i +"</color>] - <color=#36ba01>" + lastOp)
+    i = i + 1
+    inputOk = false
+    option = 0
+    while(true)
+        option = user_input("\n<color=#36ba01>Service<color=#fff>@<color=#36ba01>Installer<color=#fff>_> <color=#fff>",false,dirrectvalid).to_int
+        if typeof(option) == "number" and option <= i and option >= 0 then
+            return option
+        else
+            return null
+        end if
+    end while
+end function
+ServiceInstaller.Waiter = function()
+    user_input("\n<color=#36ba01>Press any key to continue", false, true)
+end function
+ServiceInstaller.waiter = function()
+    self.Waiter()
+end function
+ServiceInstaller.AddServices=function(list)
+    if list.type == "Service" and get_shell.host_computer.File("/lib/"+list.library) then 
+        service = include_lib("/lib/"+list.library)
+        o = service.start_service
+        if o == null then 
+            list.started = true 
+        else  
+            list.started = false 
+            service.stop_service
+        end if
+    else  
+        list.started = false
+    end if
+    list.id = self.Service_id 
+    self.Services.push(list)
+    self.Service_id = self.Service_id + 1
+end function
+ServiceInstaller.Install=function(service)
+    if service.type == "Service" then
+        output = self.aptclient.install(service.library)
+        if output == true then 
+            ser = include_lib("/lib/"+service.library)
+            output = ser.install_service
+            if output == true then 
+                print("\n<color=#fff><b>Configuration the porforward to make sure the service it's accesible</b>")
+                print("<color=#36ba01>Router Config : <color=#fff>Browser.exe " + get_router.local_ip + ":8080")
+                print("<color=#36ba01>Service       : <color=#fff>" + service.name.upper )
+                print("<color=#36ba01>Port          : <color=#fff>" + service.port)
+                print("<color=#36ba01>Local IP      : <color=#fff>" + get_shell.host_computer.local_ip)
+                return true
+            else 
+                print("<color=#D62839>"+output)
+            end if
+        else 
+            print("<color=#D62839>"+output)
+        end if 
+    else  
+        output = self.aptclient.install(service.library)
+        if output == true then 
+            print("<color=#6dda6c>Library <color=#fff>"+service.library + "</color> Downloaded to <color=#fff>/lib</color> folder")
+            return true 
+        else  
+            print("<color=#D62839>"+service.library+" Not found, add hackshop repo first")
+            repo_ip = user_input("<color=#36ba01>HackShop<color=#fff>@<color=#36ba01>IP<color=#fff>_>", false)
+            output = self.aptclient.add_repo(repo_ip)
+            if output then 
+               // print("<color=#D62839>"+output)
+            else 
+                print("<color=#6dda6c>HackShop <color=#fff>" + repo_ip + " <color=#6dda6c>added succesfully.")
+                self.Update()
+                output = self.aptclient.install(service.library)
+                if output == true then 
+                    print("<color=#6dda6c>Library <color=#fff>"+service.library + "</color> Downloaded to <color=#fff>/lib</color> folder")
+                    return true 
+                else  
+                    print("<color=#D62839>"+output)
+                end if
+            end if
+        end if 
+    end if
+    return false
+end function
+ServiceInstaller.Uninstall=function(service)
+    if service.type == "Service" then
+        ser = include_lib("/lib/"+service.library)
+        ser.stop_service
+    end if
+    for f in service.file 
+        file = get_shell.host_computer.File(f)
+        if file then file.delete
+    end for 
+    file = get_shell.host_computer.File("/lib/"+service.library)
+    if file then file.delete
+    print("\n<color=#fff><b>Remove the porforward configuration</b>")
+    print("<color=#36ba01>Router Config : <color=#fff>Browser.exe " + get_router.local_ip + ":8080")
+    print("<color=#36ba01>Service       : <color=#fff>" + service.name.upper )
+    print("<color=#36ba01>Port          : <color=#fff>" + service.port)
+    print("<color=#36ba01>Local IP      : <color=#fff>" + get_shell.host_computer.local_ip)
+    return true
+end function
+ServiceInstaller.GetVersion=function(service)
+    if self.Meta != null then 
+        if get_shell.host_computer.File("/lib/"+service.library) then
+            v = self.Meta.load("/lib/"+service.library)
+            return v.version
+        else  
+            return "-X-"
+        end if 
+    end if 
+    return "-X-"
+end function
+ServiceInstaller.CheckPort=function(service)
+    router = get_router( get_shell.host_computer.public_ip )
+    ports = router.used_ports
+    for port in ports
+        service_info = router.port_info(port)
+        service_name = service_info.split(" ")[0]
+        lan_ips = port.get_lan_ip
+        if lan_ips == get_shell.host_computer.local_ip and service_name == service.name then return false
+    end for
+    return true
+end function
+ServiceInstaller.GetServices=function()
+    self.Services = []
+    self.Service_id = 0
+    FileList = ["/server/sshd","/server/conf/sshd.conf","/server/encode.src","/server/decode.bin"]
+    self.AddServices({"id":"null","started":false,"name":"ssh","type":"Service","library":"libssh.so","port":"22","file":FileList})
+    FileList = ["/server/ftpd","/server/conf/ftpd.conf","/Public"]
+    self.AddServices({"id":"null","started":false,"name":"ftp","type":"Service","library":"libftp.so","port":"21","file":FileList})
+    FileList = ["/server/chatd","/server/conf/chatd.conf"]
+    self.AddServices({"id":"null","started":false,"name":"chat","type":"Service","library":"libchat.so","port":"6667","file":FileList})
+    FileList = ["/server/httpd","/server/conf/httpd.conf","/Public"]
+    self.AddServices({"id":"null","started":false,"name":"http","type":"Service","library":"libhttp.so","port":"80","file":FileList})
+    
+    FileList = ["/server/rshelld","/server/conf/rshelld.conf"]
+    self.AddServices({"id":"null","started":false,"name":"rshell","type":"Service","library":"librshell.so","port":"1222","file":FileList})
+    
+    FileList = ["/server/repod","/server/conf/repod.conf","/server/aptfiles"]
+    self.AddServices({"id":"null","started":false,"name":"repository","type":"Service","library":"librepository.so","port":"1542","file":FileList})
+    
+    FileList = ["/lib/crypto.so"]
+    self.AddServices({"id":"null","started":false,"name":"crypto","type":"Library","library":"crypto.so","port":"0","file":FileList})
+    
+    FileList = ["/lib/metaxploit.so"]
+    self.AddServices({"id":"null","started":false,"name":"metaxploit","type":"Library","library":"metaxploit.so","port":"0","file":FileList})
+    
+    FileList = ["/lib/blockchain.so"]
+    self.AddServices({"id":"null","started":false,"name":"blockchain","type":"Library","library":"blockchain.so","port":"0","file":FileList})
+    info_service = "<color=#ffffff>SERVICE VERSION <b>STATUS</b> PORT "
+    for s in self.Services 
+        if s.type=="Service" then
+            if get_shell.host_computer.File(s.file[0]) then 
+                status_color = "D62839"
+                status_service = "Stopped"
+                note = ""
+                if s.started then 
+                    status_color = "6dda6c"
+                    status_service = "Running"
+                    if self.CheckPort(s) then 
+                        status_color = "cf4a04"
+                        status_service = "Filtered"
+                        note = " Please configure portforwarding "+get_router.local_ip+":8080"
+                    end if
+                end if
+                info_service=info_service+"\n<color=#"+status_color+">"+s.name.upper+" "+self.GetVersion(s)+" <b>"+status_service+"</b> "+s.port+" "+note.replace(" ",char(160))
+            end if
+        end if
+    end for
+    return info_service
+end function
+ServiceInstaller.ChangeStatusService=function(service,run)
+    ser = include_lib("/lib/"+service.library)
+    if run then 
+        ser.start_service
+        status = "Started"
+        status_C = "6dda6c"
+    else  
+        ser.stop_service
+        status = "Stopped"
+        status_C = "D62839"
+    end if 
+    print("\n<color=#"+status_C+">Service <color=#fff>"+service.name+" <color=#"+status_C+">"+status)
+end function
+ServiceInstaller.ServiceAsList=function(serviceonly = false,onlyinstalled=false,uninstall=false)
+    l = []
+    newServices = []
+    if uninstall then 
+        for s in self.Services 
+            if get_shell.host_computer.File("/lib/"+s.library) then 
+                l.push("["+s.type+"] : "+s.name)
+                newServices.push(s)
+            end if 
+        end for
+        self.Services = newServices
+        return l
+    end if 
+    for s in self.Services 
+        if uninstall then 
+            if get_shell.host_computer.File("/lib/"+s.library) then 
+                l.push("["+s.type+"] : "+s.name)
+                newServices.push(s)
+            end if 
+            self.Services = newServices
+            return l
+        end if
+        if serviceonly then 
+            if s.type == "Service" then l.push("["+s.type+"] : "+s.name)
+        else 
+            if onlyinstalled  then 
+                if s.type == "Service" then 
+                    if get_shell.host_computer.File("/lib/"+s.library) then 
+                        l.push("["+s.type+"] : "+s.name)
+                        newServices.push(s)
+                    end if 
+                end if
+            else  
+                l.push("["+s.type+"] : "+s.name)
+                newServices.push(s)
+            end if
+        end if
+    end for
+    self.Services = newServices
+    return l
+end function
+ServiceInstaller.Main=function()
+    self.LoadApt()
+    self.Update()
+    self.LoadMeta()
+    while true
+        clear_screen
+        info_service = self.GetServices()
+        print(format_columns(info_service))
+        option = self.ShowOptions(["Install Service/Library", "Uninstall Service/Library","Start Service", "Stop Service"],true)
+        if option == null then continue end if
+        if option == 0 then
+            l = self.ServiceAsList()
+            loop = true
+            while loop
+                clear_screen
+                option = self.ShowOptions(l,false)
+                if option == null then continue end if
+                if option == l.len then 
+                    loop = false
+                else  
+                    if self.Install(self.Services[option]) then 
+                        self.waiter()
+                    end if
+                end if
+            end while
+        else if option == 1 then
+           l = self.ServiceAsList(false,false,true)
+            loop = true
+            while loop
+                clear_screen
+                option = self.ShowOptions(l,false)
+                if option == null then continue end if
+                if option == l.len then 
+                    loop = false
+                else  
+                    if self.Uninstall(self.Services[option]) then 
+                        loop = false
+                        self.waiter()
+                    end if
+                end if
+            end while
+        else if option == 2 then 
+            l = self.ServiceAsList(false,true)
+            loop = true
+            while loop
+                clear_screen
+                option = self.ShowOptions(l,false)
+                if option == null then continue end if
+                if option == l.len then 
+                    loop = false
+                else  
+                    self.ChangeStatusService(self.Services[option],true)
+                    self.waiter()
+                    loop = false
+                end if
+            end while
+        else if option == 3 then 
+            l = self.ServiceAsList(false,true)
+            loop = true
+            while loop
+                clear_screen
+                option = self.ShowOptions(l,false)
+                if option == null then continue end if
+                if option == l.len then 
+                    loop = false
+                else  
+                    self.ChangeStatusService(self.Services[option],false)
+                    self.waiter()
+                    loop = false
+                end if
+            end while
+        else if option == 4 then 
+            exit()
+        end if
+    end while
+end function
+ServiceInstaller.Main()

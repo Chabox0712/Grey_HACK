@@ -266,6 +266,7 @@ shell_ = function(ovr)
 		print("please Select Number")
 		print("[1] = Execute Remote Terminal with scan upload")
 		print("[2] = Execute Remote Terminal without scan upload")
+		print("[3] = Drop a reverse shell")
 		print("[999] = Back")
 		inp = user_input(">")
 		if inp == "1" then
@@ -313,6 +314,8 @@ shell_ = function(ovr)
 			ovr.start_terminal()
 		else if inp == "2" then
 			ovr.start_terminal()
+		else if inp == "3" then
+			//reverse-shell code
 		else if inp == "999" then
 			break
 		end if
@@ -407,14 +410,14 @@ fileinit_ = function(ovr)
 		file_(ovr)
 	end if
 end function
-handles_ = function(lib,shells,computers,routers,files,lanip)
+handles_ = function(lib,shells,computers,routers,filess,lanip)
 	while(true)
 		print("----[Main]----")
 		print("No more Vulns found!")
 		print("[1] = Shells ("+shells.len+")")
 		print("[2] = Computers ("+computers.len+")")
 		print("[3] = Routers ("+routers.len+")")
-		print("[4] = Files ("+files.len+")")
+		print("[4] = Files ("+filess.len+")")
 		print("[999] = Back")
 		inp = user_input(">")
 		if inp == "1" then
@@ -451,13 +454,13 @@ handles_ = function(lib,shells,computers,routers,files,lanip)
 		else if inp == "4" then
 			while(true)	
 				print("----[Files]----")
-				for s in files
+				for s in filess
 					print("["+s["key"]+"] = "+s["value"])
 				end for
 				print("[999] = Back")
 				s = user_input("select>")
-				if files.hasIndex(s.to_int) then
-					ovr = lib.overflow(files[s.to_int]["mem"],files[s.to_int]["value"],lanip)
+				if filess.hasIndex(s.to_int) then
+					ovr = lib.overflow(filess[s.to_int]["mem"],filess[s.to_int]["value"],lanip)
 					files = libs.toFile(ovr)
 					fileinit_(files)
 				else if s == "999" then
@@ -752,4 +755,3 @@ else if params.len == 1 then
 else
 	handlescanneslocal_()
 end if
-
